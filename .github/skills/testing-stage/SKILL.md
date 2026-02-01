@@ -1,106 +1,106 @@
 ---
 name: testing-stage
-description: Validate implementation through systematic testing after implement stage completes. Determines test type (unit/integration/e2e) based on task nature, runs pytest, and reports results. Stage 4 of dev-workflow pipeline. Use when user says "运行测试", "run tests", "test", or after implementation.
+description: 在 implement 阶段完成后通过系统测试验证实现。根据任务性质确定测试类型（unit/integration/e2e），运行 pytest 并报告结果。dev-workflow 流水线的阶段 4。当用户说"运行测试"、"run tests"、"test"或实现后使用。
 metadata:
   category: testing
   triggers: "run tests, test, validate, 运行测试"
 allowed-tools: Read Bash(pytest:*) Bash(python:*)
 ---
 
-# Testing Stage Skill
+# Testing Stage Skill（测试阶段技能）
 
-You are the **Quality Assurance Engineer** for the Modular RAG MCP Server. After implementation is complete, you MUST validate the work through systematic testing before proceeding to the next phase.
+你是 Modular RAG MCP Server 的**质量保证工程师**。在实现完成后，你必须在进入下一阶段之前通过系统测试验证工作。
 
-> **Prerequisite**: This skill runs AFTER `implement` has completed.
-> Spec files are located at: `.github/skills/spec-sync/specs/`
+> **前置条件**: 此技能在 `implement` 完成后运行。
+> 规范文件位于: `.github/skills/spec-sync/specs/`
 
 ---
 
-## Testing Strategy Decision Matrix
+## 测试策略决策矩阵
 
-**CRITICAL**: Test type should be determined by the **nature of the current task**. Read the task's "测试方法" from `specs/06-schedule.md` to decide.
+**关键**: 测试类型应由**当前任务的性质**决定。从 `specs/06-schedule.md` 中读取任务的"测试方法"来决定。
 
-| Task Characteristics | Recommended Test Type | Rationale |
+| 任务特征 | 推荐测试类型 | 理由 |
 |---------------------|----------------------|----------|
-| Single module, no external dependencies | **Unit Tests** | Fast, isolated, repeatable |
-| Factory/Interface definition only | **Unit Tests** (with mocks/fakes) | Verify routing logic without real backend |
-| Module needs real DB/filesystem | **Integration Tests** | Need to verify interaction with real dependencies |
-| Pipeline/workflow orchestration | **Integration Tests** | Need to verify multi-module coordination |
-| CLI scripts or end-user entry points | **E2E Tests** | Verify complete user workflow |
-| Cross-module data flow (Ingestion→Retrieval) | **Integration/E2E** | Verify data flows correctly between modules |
+| 单个模块，无外部依赖 | **Unit Tests** | 快速、隔离、可重复 |
+| 仅工厂/接口定义 | **Unit Tests**（使用 mocks/fakes） | 验证路由逻辑而不需要真实后端 |
+| 模块需要真实 DB/文件系统 | **Integration Tests** | 需要验证与真实依赖项的交互 |
+| 流水线/工作流程编排 | **Integration Tests** | 需要验证多模块协调 |
+| CLI 脚本或终端用户入口点 | **E2E Tests** | 验证完整的用户工作流程 |
+| 跨模块数据流（Ingestion→Retrieval） | **Integration/E2E** | 验证数据在模块间正确流动 |
 
 ---
 
-## Testing Objectives
+## 测试目标
 
-1. **Verify Implementation Completeness**: Ensure all requirements from the spec have been implemented.
-2. **Run Unit Tests**: Execute relevant pytest unit tests for the implemented module.
-3. **Validate Integration Points**: Check that the new code integrates correctly with existing modules.
-4. **Report Issues**: Provide actionable feedback if tests fail.
+1. **验证实现完整性**: 确保规范中的所有需求都已实现。
+2. **运行 Unit Tests**: 为实现的模块执行相关的 pytest unit tests。
+3. **验证集成点**: 检查新代码是否与现有模块正确集成。
+4. **报告问题**: 如果测试失败，提供可操作的反馈。
 
 ---
 
-## Step 1: Identify Test Scope & Test Type
+## 步骤 1: 识别测试范围与测试类型
 
-**Goal**: Determine what needs to be tested and **which type of tests** to run based on the current task phase.
+**目标**: 根据当前任务阶段确定需要测试什么以及**运行哪种类型的测试**。
 
-### 1.1 Identify Modified Files
-1. Read the task completion summary from Stage 3 (Implementation).
-2. Identify which modules/files were created or modified.
-3. Map files to their corresponding test files:
+### 1.1 识别修改的文件
+1. 从阶段 3（实现）读取任务完成总结。
+2. 识别创建或修改了哪些模块/文件。
+3. 将文件映射到相应的测试文件：
    - `src/libs/xxx/yyy.py` → `tests/unit/test_yyy.py`
    - `src/core/xxx/yyy.py` → `tests/unit/test_yyy.py`
-   - `src/ingestion/xxx.py` → `tests/unit/test_xxx.py` or `tests/integration/test_xxx.py`
+   - `src/ingestion/xxx.py` → `tests/unit/test_xxx.py` 或 `tests/integration/test_xxx.py`
 
-### 1.2 Determine Test Type (Smart Selection)
+### 1.2 确定测试类型（智能选择）
 
-**CRITICAL**: The test type should be determined by the **nature of the current task**, not a fixed rule.
+**关键**: 测试类型应由**当前任务的性质**决定，而不是固定规则。
 
-**Decision Logic**:
+**决策逻辑**:
 
-1. Read the task spec in `specs/06-schedule.md` to find the "测试方法" field
-2. Apply the **Testing Strategy Decision Matrix** (see top of document)
-3. Check task-specific test method in schedule:
-   - `pytest -q tests/unit/test_xxx.py` → Run unit tests
-   - `pytest -q tests/integration/test_xxx.py` → Run integration tests
-   - `pytest -q tests/e2e/test_xxx.py` → Run E2E tests
+1. 在 `specs/06-schedule.md` 中读取任务规范以查找"测试方法"字段
+2. 应用**测试策略决策矩阵**（见文档顶部）
+3. 检查进度表中任务特定的测试方法：
+   - `pytest -q tests/unit/test_xxx.py` → 运行 unit tests
+   - `pytest -q tests/integration/test_xxx.py` → 运行 integration tests
+   - `pytest -q tests/e2e/test_xxx.py` → 运行 E2E tests
 
-**Output**:
+**输出**:
 ```
 ────────────────────────────────────
- TEST SCOPE IDENTIFIED
+ 识别到测试范围
 ────────────────────────────────────
-Task: [C14] Pipeline 编排（MVP 串起来）
-Modified Files:
+任务: [C14] Pipeline 编排（MVP 串起来）
+修改的文件:
 - src/ingestion/pipeline.py
 
-Test Type Decision:
-- Task Nature: Pipeline orchestration (multi-module coordination)
-- Spec Test Method: pytest -q tests/integration/test_ingestion_pipeline.py
-- Selected: **Integration Tests** 
+测试类型决策:
+- 任务性质: Pipeline orchestration (多模块协调)
+- 规范测试方法: pytest -q tests/integration/test_ingestion_pipeline.py
+- 已选择: **Integration Tests** 
 
-Rationale: This task wires multiple modules together,
-requiring real interactions between loader, splitter,
-transform, and storage components.
+理由: 此任务将多个模块连接在一起，
+需要 loader、splitter、transform 和 storage 
+组件之间的真实交互。
 ────────────────────────────────────
 ```
 
 ---
 
-## Step 2: Execute Tests
+## 步骤 2: 执行测试
 
-**Goal**: Run the appropriate tests and capture results.
+**目标**: 运行适当的测试并捕获结果。
 
-**Actions**:
+**操作**:
 
-### 2.1 Check if Tests Exist
+### 2.1 检查测试是否存在
 ```bash
 # Check for existing test files
 ls tests/unit/test_<module_name>.py
 ls tests/integration/test_<module_name>.py
 ```
 
-### 2.2 If Tests Exist - Run Them
+### 2.2 如果测试存在 - 运行它们
 ```bash
 # Run specific unit tests
 pytest -v tests/unit/test_<module_name>.py
@@ -109,102 +109,102 @@ pytest -v tests/unit/test_<module_name>.py
 pytest -v --cov=src/<module_path> tests/unit/test_<module_name>.py
 ```
 
-### 2.3 If Tests Don't Exist - Report Missing Tests
-If the spec requires tests but none exist:
+### 2.3 如果测试不存在 - 报告缺失的测试
+如果规范要求测试但不存在：
 
 ```
 ────────────────────────────────────────
- ⚠️ MISSING TESTS DETECTED
+ ⚠️ 检测到缺失测试
 ────────────────────────────────────────
-Module: <module_name>
-Expected Test File: tests/unit/test_<module_name>.py
+模块: <module_name>
+预期测试文件: tests/unit/test_<module_name>.py
 
-Status: NOT FOUND
+状态: 未找到
 
-Action Required:
-  Return to Stage 3 (implement) to create tests
-  following the test patterns in existing test files.
+需要的操作:
+  返回阶段 3 (implement) 创建测试，
+  遵循现有测试文件中的测试模式。
 ────────────────────────────────────────
 ```
 
-**Action**: Return `MISSING_TESTS` signal to workflow orchestrator to go back to implement stage.
+**操作**: 向工作流程协调器返回 `MISSING_TESTS` 信号以返回实现阶段。
 
 ---
 
-## Step 3: Analyze Results
+## 步骤 3: 分析结果
 
-**Goal**: Interpret test results and determine next action.
+**目标**: 解释测试结果并确定下一步操作。
 
-### 3.1 Test Passed 
-If all tests pass:
+### 3.1 测试通过
+如果所有测试通过：
 ```
 ────────────────────────────────────────
- TESTS PASSED
+ ✅ 测试通过
 ────────────────────────────────────────
-Module: <module_name>
-Tests Run: X
-Tests Passed: X
-Coverage: XX% (if available)
+模块: <module_name>
+运行测试: X
+通过测试: X
+覆盖率: XX% (如果可用)
 
-Ready to proceed to next phase.
+准备进入下一阶段。
 ────────────────────────────────────────
 ```
-**Action**: Return `PASS` signal to workflow orchestrator.
+**操作**: 向工作流程协调器返回 `PASS` 信号。
 
-### 3.2 Test Failed 
-If any tests fail:
+### 3.2 测试失败
+如果任何测试失败：
 ```
 ────────────────────────────────────────
- TESTS FAILED
+ ❌ 测试失败
 ────────────────────────────────────────
-Module: <module_name>
-Tests Run: X
-Tests Failed: Y
+模块: <module_name>
+运行测试: X
+失败测试: Y
 
-Failed Tests:
+失败的测试:
 1. test_xxx - AssertionError: expected A, got B
 2. test_yyy - ImportError: module not found
 
-Root Cause Analysis:
-- [Analyze the failure and identify the issue]
+根本原因分析:
+- [分析失败并识别问题]
 
-Suggested Fix:
-- [Provide specific fix suggestions]
+建议修复:
+- [提供具体的修复建议]
 ────────────────────────────────────────
 ```
-**Action**: Return `FAIL` signal with detailed feedback to `implement` for iteration.
+**操作**: 向 `implement` 返回 `FAIL` 信号并提供详细反馈以进行迭代。
 
 ---
 
-## Step 4: Feedback Loop
+## 步骤 4: 反馈循环
 
-**Goal**: Enable iterative improvement until tests pass.
+**目标**: 启用迭代改进直到测试通过。
 
-### If Tests Failed:
-1. **Generate Fix Report**: Create a structured report with:
-   - Failed test name
-   - Error message
-   - Stack trace summary
-   - File and line number of failure
-   - Suggested fix approach
+### 如果测试失败:
+1. **生成修复报告**: 创建包含以下内容的结构化报告：
+   - 失败的测试名称
+   - 错误消息
+   - 堆栈跟踪摘要
+   - 失败的文件和行号
+   - 建议的修复方法
 
-2. **Return to Implementation**: Pass the fix report back to Stage 3 (implement) for correction.
+2. **返回实现**: 将修复报告传回阶段 3 (implement) 进行修正。
 
-3. **Re-test**: After implementation updates, run tests again.
+3. **重新测试**: 实现更新后，再次运行测试。
 
-### Iteration Limit:
-- **Maximum 3 iterations** per task to prevent infinite loops.
-- If still failing after 3 iterations, escalate to user for manual intervention.
+### 迭代限制:
+- **每个任务最多 3 次迭代**以防止无限循环。
+- 如果 3 次迭代后仍然失败，上报给用户手动干预。
 
 ---
 
-## Testing Standards
+## 测试标准
 
-### Test Naming Convention
+### 测试命名约定
 - `test_<function>_<scenario>_<expected_result>`
-- Example: `test_embed_empty_input_returns_empty_list`
+- 示例: `test_embed_empty_input_returns_empty_list`
 
-### Test Categories (pytest markers)
+### 测试类别（pytest markers）
 ```python
 @pytest.mark.unit       # Fast, isolated tests
 @pytest.mark.integration  # Tests with real dependencies
@@ -212,33 +212,33 @@ Suggested Fix:
 @pytest.mark.slow       # Long-running tests
 ```
 
-### Mock Strategy
-- **Unit Tests**: Mock all external dependencies (LLM, DB, HTTP)
-- **Integration Tests**: Use real local dependencies, mock external APIs
-- **E2E Tests**: Minimal mocking, test actual behavior
+### Mock 策略
+- **Unit Tests**: Mock 所有外部依赖（LLM、DB、HTTP）
+- **Integration Tests**: 使用真实的本地依赖，mock 外部 API
+- **E2E Tests**: 最小化 mocking，测试实际行为
 
 ---
 
-## Validation Checklist
+## 验证检查清单
 
-Before marking tests as complete, verify:
+在将测试标记为完成之前，验证：
 
-- [ ] All new public methods have at least one test
-- [ ] Tests follow the naming convention
-- [ ] Tests are placed in the correct directory (unit/integration/e2e)
-- [ ] Tests use appropriate mocking (no real API calls in unit tests)
-- [ ] Test assertions match spec requirements
-- [ ] No hardcoded paths or credentials in tests
-- [ ] Tests can run in isolation (no order dependency)
+- [ ] 所有新的公共方法至少有一个测试
+- [ ] 测试遵循命名约定
+- [ ] 测试放置在正确的目录中（unit/integration/e2e）
+- [ ] 测试使用适当的 mocking（unit tests 中没有真实的 API 调用）
+- [ ] 测试断言与规范要求匹配
+- [ ] 测试中没有硬编码的路径或凭据
+- [ ] 测试可以独立运行（无顺序依赖）
 
 ---
 
-## Important Rules
+## 重要规则
 
-1. **No Skipping Tests**: If spec says "tests needed", tests must exist.
-2. **Fast Feedback**: Unit tests should complete in < 10 seconds.
-3. **Deterministic**: Tests must not have random failures.
-4. **Independence**: Each test must be able to run independently.
-5. **Clear Failures**: Failed tests must provide actionable error messages.
+1. **不跳过测试**: 如果规范说"需要测试"，则测试必须存在。
+2. **快速反馈**: Unit tests 应在 < 10 秒内完成。
+3. **确定性**: 测试不得有随机失败。
+4. **独立性**: 每个测试必须能够独立运行。
+5. **清晰的失败**: 失败的测试必须提供可操作的错误消息。
 
 ---

@@ -1,261 +1,261 @@
 ---
 name: checkpoint
-description: Summarize completed work, update progress tracking in DEV_SPEC.md, and prepare for next iteration. Final stage of dev-workflow pipeline. Use when task implementation and testing is completed, or when user says "完成检查点", "checkpoint", "保存进度", "save progress", "任务完成".
+description: 总结已完成工作，更新 DEV_SPEC.md 中的进度跟踪，并为下一次迭代做准备。dev-workflow 流程的最终阶段。当任务实现和测试完成时使用，或当用户说"完成检查点"、"checkpoint"、"保存进度"、"save progress"、"任务完成"时使用。
 metadata:
   category: progress-tracking
   triggers: "checkpoint, save progress, 完成检查点, 保存进度, 任务完成"
 allowed-tools: Bash(python:*) Bash(git:*) Read Write
 ---
 
-# Checkpoint & Progress Persistence
+# Checkpoint & Progress Persistence（检查点与进度持久化）
 
-This skill handles **task completion summarization** and **progress tracking synchronization**. It ensures that completed work is properly documented and the project schedule in `DEV_SPEC.md` stays up-to-date.
+本技能处理**任务完成总结**和**进度跟踪同步**。它确保已完成的工作被正确记录，并且 `DEV_SPEC.md` 中的项目进度保持最新状态。
 
-> **Single Responsibility**: Summarize → Persist → Prepare Next
-
----
-
-## When to Use This Skill
-
-- When a task implementation and testing is **completed**
-- When you need to **manually update progress** in DEV_SPEC.md
-- When you want to **generate a commit message** for completed work
-- As the **final stage** of the `dev-workflow` pipeline
+> **单一职责**: 总结 → 持久化 → 准备下一步
 
 ---
 
-## Workflow
+## 何时使用本技能
+
+- 当任务实现和测试**已完成**时
+- 当你需要**手动更新 DEV_SPEC.md 中的进度**时
+- 当你想要**为已完成的工作生成提交信息**时
+- 作为 `dev-workflow` 流程的**最终阶段**
+
+---
+
+## 工作流程
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Step 1           Step 1.5                 Step 2              Step 3      │
+│  步骤 1            步骤 1.5                步骤 2              步骤 3       │
 │  ────────         ────────                 ────────            ────────     │
-│  Summarize   →   User Confirm (WHAT)  →   Persist Progress →  Commit Prep │
-│  (Summarize)      (Verify work done)       (Update DEV_SPEC)   (WHETHER)   │
+│  总结工作   →   用户确认 (WHAT)  →     持久化进度 →      提交准备          │
+│  (Summarize)     (验证完成内容)        (更新 DEV_SPEC)   (WHETHER)         │
 └─────────────────────────────────────────────────────────────────────────────┘
 
                     ┌──────────────────┐
-                    │   Tests Passed   │
+                    │   测试通过       │
                     └────────┬─────────┘
                              ▼
                   ┌──────────────────────┐
-                  │  Step 1: Summarize   │
-                  │  Generate summary    │
+                  │  步骤 1: 总结工作    │
+                  │  生成总结            │
                   └────────┬─────────────┘
                            ▼
                   ┌──────────────────────┐
-                  │ Step 1.5: User       │
-                  │ Confirmation         │
-                  │ Wait for user OK     │
+                  │ 步骤 1.5: 用户       │
+                  │ 确认                 │
+                  │ 等待用户确认         │
                   └────────┬─────────────┘
                            │
-                     User OK? ──No──→ Revise summary → Back to Step1
+                    用户确认? ──否──→ 修改总结 → 返回步骤1
                            │
-                       Yes ▼
+                       是 ▼
                   ┌──────────────────────┐
-                  │ Step 2: Persist      │
-                  │ Progress             │
-                  │ Update DEV_SPEC.md   │
-                  └────────┬─────────────┘
-                           ▼
-                  ┌──────────────────────┐
-                  │ Step 3: Commit Prep  │
-                  │ Generate commit msg  │
-                  │ Wait for user OK     │
-                  └────────┬─────────────┘
-                           │
-                     User OK? ──No──→ Skip commit → Flow end
-                           │
-                       Yes ▼
-                  ┌──────────────────────┐
-                  │  Execute git commit  │
+                  │ 步骤 2: 持久化       │
+                    进度                 │
+                  │ 更新 DEV_SPEC.md     │
                   └────────┬─────────────┘
                            ▼
                   ┌──────────────────────┐
-                  │   Checkpoint Done  │
+                  │ 步骤 3: 提交准备     │
+                  │ 生成提交信息         │
+                  │ 等待用户确认         │
+                  └────────┬─────────────┘
+                           │
+                    用户确认? ──否──→ 跳过提交 → 流程结束
+                           │
+                       是 ▼
+                  ┌──────────────────────┐
+                  │  执行 git commit     │
+                  └────────┬─────────────┘
+                           ▼
+                  ┌──────────────────────┐
+                  │   检查点完成         │
                   └──────────────────────┘
 ```
 
 ---
 
-## Step 1: Work Summary
+## 步骤 1: 工作总结
 
-**Goal**: Generate a clear, structured summary of completed work.
+**目标**: 生成清晰、结构化的已完成工作总结。
 
-### 1.1 Collect Information
+### 1.1 收集信息
 
-Gather the following from the current session:
-- **Task ID**: e.g., `A3`, `B1`, `C5`
-- **Task Name**: e.g., "配置加载与校验"
-- **Files Created/Modified**: List all file changes
-- **Test Results**: Pass/fail status and coverage (if available)
-- **Implementation Iterations**: How many test-fix cycles occurred
+从当前会话中收集以下信息：
+- **任务 ID**: 例如 `A3`, `B1`, `C5`
+- **任务名称**: 例如 "配置加载与校验"
+- **创建/修改的文件**: 列出所有文件更改
+- **测试结果**: 通过/失败状态和覆盖率（如果可用）
+- **实现迭代次数**: 发生了多少次测试-修复循环
 
-### 1.2 Generate Summary Report
+### 1.2 生成总结报告
 
-**Output Format**:
+**输出格式**:
 ```
 ────────────────────────────────────────────────────
- TASK COMPLETED: [Task ID] [Task Name]
+ 任务完成: [Task ID] [Task Name]
 ────────────────────────────────────────────────────
 
- Files Changed:
-  Created:
+ 修改的文件:
+  创建:
     - src/xxx/yyy.py
     - tests/unit/test_yyy.py
-  Modified:
+  修改:
     - src/xxx/zzz.py
 
- Test Results:
-    - tests/unit/test_yyy.py: 5/5 passed 
-    - tests/unit/test_zzz.py: 3/3 passed 
-    - Coverage: 85% (if available)
+ 测试结果:
+    - tests/unit/test_yyy.py: 5/5 通过 
+    - tests/unit/test_zzz.py: 3/3 通过 
+    - 覆盖率: 85% (如果可用)
 
- Iterations: [N] (1 = first try success)
+ 迭代次数: [N] (1 = 首次尝试成功)
 
- Spec Reference: DEV_SPEC.md Section [X.Y]
+ 规范引用: DEV_SPEC.md Section [X.Y]
 ────────────────────────────────────────────────────
 ```
 
 ---
 
-## Step 1.5: User Confirmation (Verify WHAT Was Done)
+## 步骤 1.5: 用户确认（验证完成了什么）
 
-**Goal**: Present summary to user for verification before persisting progress.
+**目标**: 在持久化进度之前，向用户展示总结以供验证。
 
-**This confirms WHAT work was completed** - validating the summary accuracy, not whether to save it.
+**这确认了完成了什么工作** - 验证总结的准确性，而不是是否保存它。
 
-### 1.5.1 Confirmation Prompt
+### 1.5.1 确认提示
 
-**Output Format**:
+**输出格式**:
 ```
 ════════════════════════════════════════════════════
- Please Verify Completion Summary / 请验证工作总结
+ 请验证完成总结 / Please Verify Completion Summary
 ════════════════════════════════════════════════════
 
- Task: [Task ID] [Task Name]
- Spec Reference: DEV_SPEC.md Section [X.Y]
+ 任务: [Task ID] [Task Name]
+ 规范引用: DEV_SPEC.md Section [X.Y]
 
- Files Changed:
-  Created:
+ 修改的文件:
+  创建:
     - src/xxx/yyy.py
     - tests/unit/test_yyy.py
-  Modified:
+  修改:
     - src/xxx/zzz.py
 
- Test Results:
-    - tests/unit/test_yyy.py: 5/5 passed 
-    - tests/unit/test_zzz.py: 3/3 passed 
+ 测试结果:
+    - tests/unit/test_yyy.py: 5/5 通过 
+    - tests/unit/test_zzz.py: 3/3 通过 
 
- Iterations: [N]
+ 迭代次数: [N]
 
 ════════════════════════════════════════════════════
- Is this summary accurate?
  以上总结是否准确？
+ Is this summary accurate?
 
-   Please reply: "confirm" / "确认" to save progress to DEV_SPEC.md
-                "revise" / "修改" to regenerate summary
+   请回复: "confirm" / "确认" 将进度保存到 DEV_SPEC.md
+          "revise" / "修改" 重新生成总结
                 
- Note: This only verifies the summary. DEV_SPEC.md will be updated
- after confirmation. Git commit decision comes later.
+ 注意: 这只是验证总结。DEV_SPEC.md 将在确认后更新。
+ Git commit 决定将在稍后进行。
 ════════════════════════════════════════════════════
 ```
 
-### 1.5.2 Handle User Response
+### 1.5.2 处理用户响应
 
-| User Response | Action |
+| 用户响应 | 操作 |
 |---------------|--------|
-| "confirm" / "yes" / "确认" / "是" | Proceed to Step 2 |
-| "revise" / "no" / "修改" / "否" | Ask user what needs to be corrected, then regenerate summary |
+| "confirm" / "yes" / "确认" / "是" | 进入步骤 2 |
+| "revise" / "no" / "修改" / "否" | 询问用户需要修正什么，然后重新生成总结 |
 
-**Important**: Do NOT proceed to Step 2 until user explicitly confirms.
+**重要**: 在用户明确确认之前，不要进入步骤 2。
 
 ---
 
-## Step 2: Persist Progress
+## 步骤 2: 持久化进度
 
-**Goal**: Update `DEV_SPEC.md` to mark the task as completed.
+**目标**: 更新 `DEV_SPEC.md` 以标记任务为已完成。
 
-> **Auto-Execute**: This step runs automatically after Step 1.5 user confirmation. No additional user input required.
+> **自动执行**: 此步骤在步骤 1.5 用户确认后自动运行。无需额外的用户输入。
 
-### 2.1 Locate Task in DEV_SPEC.md
+### 2.1 在 DEV_SPEC.md 中定位任务
 
-1. Read `DEV_SPEC.md` (the **GLOBAL** file, NOT chapter files)
-2. Find the task by its identifier pattern:
-   - Look for `### [Task ID]：[Task Name]` (e.g., `### A3：配置加载与校验`)
-   - Or look for checkbox pattern: `- [ ] [Task ID] [Task Name]`
+1. 读取 `DEV_SPEC.md`（**全局**文件，不是章节文件）
+2. 通过标识符模式查找任务：
+   - 查找 `### [Task ID]：[Task Name]`（例如 `### A3：配置加载与校验`）
+   - 或查找复选框模式: `- [ ] [Task ID] [Task Name]`
 
-### 2.2 Update Progress Marker
+### 2.2 更新进度标记
 
-**Supported Marker Styles**:
+**支持的标记样式**:
 
-| Before | After | Style |
+| 更新前 | 更新后 | 样式 |
 |--------|-------|-------|
 | `[ ]` | `[x]` | Checkbox |
-| `` | `` | Emoji |
-| `### A3：任务名` | `### A3：任务名 ` | Title suffix |
+| ⏳ | ✅ | Emoji |
+| `### A3：任务名` | `### A3：任务名 ✅` | Title suffix |
 | `(进行中)` | `(已完成)` | Chinese status |
 | `(In Progress)` | `(Completed)` | English status |
 
-**Update Logic**:
+**更新逻辑**:
 ```python
-# Pseudo-code for update logic
+# 更新逻辑的伪代码
 if task_line contains "[ ]":
     replace "[ ]" with "[x]"
-elif task_line contains "":
-    replace "" with ""
+elif task_line contains "⏳":
+    replace "⏳" with "✅"
 elif task_line contains "(进行中)" or "(In Progress)":
     replace with "(已完成)" or "(Completed)"
 else:
-    append " " to task title
+    append " ✅" to task title
 ```
 
-### 2.3 Step 2 Output Format
+### 2.3 步骤 2 输出格式
 
-**Output after updating DEV_SPEC.md**:
+**更新 DEV_SPEC.md 后的输出**:
 ```
 ────────────────────────────────────
-DEV_SPEC.md Progress Updated
+DEV_SPEC.md 进度已更新
 ────────────────────────────────────
-Task: [Task ID] [Task Name]
-Status: [ ] -> [x]
+任务: [Task ID] [Task Name]
+状态: [ ] -> [x]
 ────────────────────────────────────
 ```
 
 ---
 
-## Step 3: Commit Preparation
+## 步骤 3: 提交准备
 
-**Goal**: Generate structured commit message and ask user whether to commit.
+**目标**: 生成结构化的提交信息并询问用户是否提交。
 
-### 3.1 Commit Message Template
+### 3.1 Commit Message 模板
 
-**Subject Format**:
+**Subject 格式**:
 ```
 <type>(<scope>): [Phase X.Y] <brief description>
 ```
 
-**Template Definition**:
-| Field | Description | Example |
+**模板定义**:
+| 字段 | 说明 | 示例 |
 |-------|-------------|---------|
-| `<type>` | Commit type (see table below) | `feat`, `fix`, `test` |
-| `<scope>` | Module/component name | `config`, `retriever`, `pipeline` |
-| `[Phase X.Y]` | DEV_SPEC phase number | `[Phase 2.3]`, `[Phase A3]` |
-| `<brief description>` | What was done (< 50 chars) | `implement config loader` |
+| `<type>` | Commit 类型（见下表） | `feat`, `fix`, `test` |
+| `<scope>` | 模块/组件名称 | `config`, `retriever`, `pipeline` |
+| `[Phase X.Y]` | DEV_SPEC 阶段编号 | `[Phase 2.3]`, `[Phase A3]` |
+| `<brief description>` | 完成的内容（< 50 字符） | `implement config loader` |
 
-**Commit Type Guidelines**:
-| Change Type | Commit Prefix |
+**Commit 类型指南**:
+| 更改类型 | Commit 前缀 |
 |-------------|---------------|
-| New feature | `feat:` |
-| Bug fix | `fix:` |
-| Refactoring | `refactor:` |
-| Tests only | `test:` |
-| Documentation | `docs:` |
-| Configuration | `chore:` |
+| 新功能 | `feat:` |
+| Bug 修复 | `fix:` |
+| 重构 | `refactor:` |
+| 仅测试 | `test:` |
+| 文档 | `docs:` |
+| 配置 | `chore:` |
 
-### 3.2 Generate Commit Message
+### 3.2 生成 Commit Message
 
-**Output Format**:
+**输出格式**:
 ```
 ════════════════════════════════════════════════════
  COMMIT MESSAGE / 提交信息
@@ -283,26 +283,26 @@ Task: [Task ID] <Task Name>
 ════════════════════════════════════════════════════
 ```
 
-### 3.3 User Commit Confirmation (Decide WHETHER to Commit)
+### 3.3 用户提交确认（决定是否提交）
 
-**This confirms WHETHER to commit** - deciding if changes should be committed to git now or manually later.
+**这确认是否提交** - 决定更改是否应该现在提交到 git 还是稍后手动提交。
 
-**Prompt User**:
+**提示用户**:
 ```
 ────────────────────────────────────
- Do you want me to commit these changes?
  是否需要帮您执行 git commit？
+ Do you want me to commit these changes?
 ────────────────────────────────────
 
-Please reply / 请回复:
-  "yes" / "commit" / "是" → Execute git add + git commit
-  "no" / "skip" / "否"   → End flow, you can commit manually later
+请回复 / Please reply:
+  "yes" / "commit" / "是" → 执行 git add + git commit
+  "no" / "skip" / "否"   → 结束流程，您可以稍后手动提交
 ────────────────────────────────────
 ```
 
-### 3.4 Execute Commit (If Confirmed)
+### 3.4 执行提交（如果确认）
 
-**If user confirms**:
+**如果用户确认**:
 ```bash
 # Stage all changed files
 git add <list of changed files>
@@ -311,64 +311,65 @@ git add <list of changed files>
 git commit -m "<subject>" -m "<description>"
 ```
 
-**Success Output**:
+**成功输出**:
 ```
 ────────────────────────────────────
- COMMIT SUCCESSFUL
+ 提交成功 / COMMIT SUCCESSFUL
 ────────────────────────────────────
 Commit: <short hash>
 Branch: <current branch>
 
-Progress saved, task [Task ID] completed!
 进度已保存，任务 [Task ID] 已完成！
+Progress saved, task [Task ID] completed!
 ────────────────────────────────────
 ```
 
-### 3.5 Skip Commit (If Declined)
+### 3.5 跳过提交（如果拒绝）
 
-**If user declines**:
+**如果用户拒绝**:
 ```
 ────────────────────────────────────
+ 工作流程已完成（未提交）
  WORKFLOW COMPLETED (No Commit)
 ────────────────────────────────────
- DEV_SPEC.md updated
- Git commit skipped
+ ✓ DEV_SPEC.md 已更新
+ ⊘ Git commit 已跳过
 
-You can manually commit later with:
+您可以稍后手动提交:
   git add .
   git commit -m "<subject>" -m "<description>"
 
-Task [Task ID] checkpoint completed!
 任务 [Task ID] 检查点完成！
+Task [Task ID] checkpoint completed!
 ────────────────────────────────────
 ```
 
 ---
 
-## Quick Commands
+## 快速命令
 
-| User Says | Behavior |
+| 用户说 | 行为 |
 |-----------|---------|
-| "checkpoint" / "完成检查点" | Full workflow (Step 1-3) with confirmations |
-| "save progress" / "保存进度" | Step 1.5-2 only (confirm + persist) |
-| "commit message" / "生成提交信息" | Step 3 only (generate commit message) |
-| "commit for me" / "帮我提交" | Step 3 + execute git commit |
+| "checkpoint" / "完成检查点" | 完整工作流程（步骤 1-3）带确认 |
+| "save progress" / "保存进度" | 仅步骤 1.5-2（确认 + 持久化） |
+| "commit message" / "生成提交信息" | 仅步骤 3（生成提交信息） |
+| "commit for me" / "帮我提交" | 步骤 3 + 执行 git commit |
 
 ---
 
-## Important Rules
+## 重要规则
 
-1. **Always Update GLOBAL DEV_SPEC.md**: This is the single source of truth for progress tracking.
+1. **始终更新全局 DEV_SPEC.md**: 这是进度跟踪的唯一真实来源。
 
-2. **Preserve Existing Format**: Match the marker style already used in the document (checkbox vs emoji vs text).
+2. **保留现有格式**: 匹配文档中已使用的标记样式（复选框 vs emoji vs 文本）。
 
-3. **Atomic Updates**: Update ONE task at a time. Don't batch-update multiple tasks.
+3. **原子更新**: 一次更新一个任务。不要批量更新多个任务。
 
-4. **Two User Confirmations Required**: 
-   - Step 1.5: User must confirm work summary before persisting
-   - Step 3.3: User must confirm before git commit
-   - **NEVER skip these confirmations!**
+4. **需要两次用户确认**: 
+   - 步骤 1.5: 用户必须在持久化之前确认工作总结
+   - 步骤 3.3: 用户必须在 git commit 之前确认
+   - **永远不要跳过这些确认！**
 
-5. **Traceability**: Every checkpoint must reference the specific spec section that defined the task.
+5. **可追溯性**: 每个检查点必须引用定义该任务的具体规范章节。
 
 ---

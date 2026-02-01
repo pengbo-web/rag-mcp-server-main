@@ -1,127 +1,128 @@
 ---
 name: implement
-description: Implement features following spec-driven workflow. Read specs first, extract design principles, plan file strategy, then write production-ready code with type hints and docstrings. Use when user asks to implement a feature, write code, or build a module. Depends on spec-sync for specification access.
+description: 遵循规范驱动工作流程实现功能。首先阅读规范，提取设计原则，规划文件策略，然后编写带有类型提示和文档字符串的生产就绪代码。当用户要求实现功能、编写代码或构建模块时使用。依赖 spec-sync 访问规范文档。
 metadata:
   category: implementation
   triggers: "implement, write code, build module, 实现, 写代码"
 allowed-tools: Read Write Bash(python:*) Bash(pytest:*)
 ---
 
-# Standard Operating Procedure: Implement from Spec
+# Standard Operating Procedure: Implement from Spec（标准操作流程：从规范实现）
 
-You are the Lead Architect for the Modular RAG MCP Server. When the user asks to implement a feature, you MUST follow this strictly defined workflow.
+你是 Modular RAG MCP Server 的首席架构师。当用户要求实现功能时，你必须遵循这个严格定义的工作流程。
 
-> **Prerequisite**: This skill depends on `spec-sync` for accessing specification documents.
-> Spec files are located at: `.github/skills/spec-sync/specs/`
+> **前置条件**: 此技能依赖 `spec-sync` 来访问规范文档。
+> 规范文件位于: `.github/skills/spec-sync/specs/`
 
 ---
 
-## Step 1: Spec Retrieval & Analysis
-**Goal**: Ground your work in the authoritative spec documentation using progressive disclosure.
+## 步骤 1: 规范检索与分析
+**目标**: 使用渐进式披露方法，将你的工作基于权威的规范文档。
 
-### 1.1 Navigate Intelligently
-Instead of reading the entire `DEV_SPEC.md` , use the modular approach:
-- **First**, read `.github/skills/spec-sync/SPEC_INDEX.md` to locate the relevant chapter.
-- **Then**, read only the specific chapter file from `.github/skills/spec-sync/specs/`.
+### 1.1 智能导航
+不要阅读整个 `DEV_SPEC.md`，使用模块化方法：
+- **首先**，阅读 `.github/skills/spec-sync/SPEC_INDEX.md` 以定位相关章节。
+- **然后**，只从 `.github/skills/spec-sync/specs/` 读取特定的章节文件。
 
-### 1.2 Extract Task-Specific Requirements
-Identify key requirements from the targeted chapter:
-*   **Inputs/Outputs**: What data types are expected?
-*   **Dependencies**: Are there specific libraries required?
-*   **Modified Files**: What files should be created or modified for this task?
-*   **Verification Criteria**: What are the acceptance criteria for this task?
+### 1.2 提取任务特定需求
+从目标章节识别关键需求：
+*   **输入/输出**: 期望什么数据类型？
+*   **依赖项**: 是否需要特定的库？
+*   **修改的文件**: 此任务应创建或修改哪些文件？
+*   **验证标准**: 此任务的验收标准是什么？
 
-### 1.3 Extract Design Principles
+### 1.3 提取设计原则
 
-**CRITICAL**: Identify and extract relevant design principles from the spec for the current task.
+**关键**: 为当前任务从规范中识别并提取相关的设计原则。
 
-**Actions**:
-1. Locate task in `specs/06-schedule.md`
-2. Cross-reference `specs/03-tech-stack.md` or `specs/05-architecture.md`
-3. Extract applicable principles (Pluggable, Config-Driven, Fallback, Idempotent, Observable)
-4. Document principles before coding
+**操作**:
+1. 在 `specs/06-schedule.md` 中定位任务
+2. 交叉引用 `specs/03-tech-stack.md` 或 `specs/05-architecture.md`
+3. 提取适用的原则（可插拔、配置驱动、降级、幂等、可观察）
+4. 在编码前记录原则
 
-**Output Template**:
+**输出模板**:
 ```
 ────────────────────────────────────
-DESIGN PRINCIPLES FOR THIS TASK
+本任务的设计原则
 ────────────────────────────────────
-Task: [Task ID] [Task Name]
+任务: [Task ID] [Task Name]
 
-Applicable Principles:
-1. [Principle] - [Implementation requirement]
-2. [Principle] - [Implementation requirement]
+适用原则:
+1. [原则] - [实现要求]
+2. [原则] - [实现要求]
 
-Source: specs/XX-xxx.md Section X.X
+来源: specs/XX-xxx.md Section X.X
 ────────────────────────────────────
 ```
 
-### 1.4 Acknowledge
-Explicitly state to the user which chapter you consulted and which principles apply. Example:
-> *"I have reviewed `specs/03-tech-stack.md` Section 3.3.2. For task B1 (LLM Factory), the applicable design principles are: Pluggable Architecture (abstract base + factory), Configuration-Driven (provider from settings.yaml), and Graceful Error Handling."*
+### 1.4 确认
+明确向用户说明你参考了哪个章节以及哪些原则适用。例如：
+> *"我已查阅 `specs/03-tech-stack.md` Section 3.3.2。对于任务 B1（LLM Factory），适用的设计原则是：可插拔架构（抽象基类 + 工厂）、配置驱动（从 settings.yaml 读取提供者）和优雅错误处理。"*
 
-**Chapter Reference Quick Guide** (files in `.github/skills/spec-sync/specs/`):
-- **Architecture questions** → `05-architecture.md`
-- **Tech implementation details** → `03-tech-stack.md`
-- **Testing requirements** → `04-testing.md`
-- **Schedule/Progress tracking** → `06-schedule.md`
-
----
-
-## Step 2: Technical Planning
-**Goal**: Ensure modularity and design principle compliance before writing a single line of code.
-
-1.  **File Strategy**: List the files to create or modify (cross-check with task's "Modified Files" field in schedule).
-2.  **Interface Design**: Based on the design principles extracted in Step 1.3:
-    - If **Pluggable** principle applies → Define abstract base classes first
-    - If **Factory Pattern** applies → Plan the factory function signature
-    - If **Config-Driven** applies → Identify settings.yaml fields needed
-3.  **Dependency Check**: If new libraries are needed, plan to update `pyproject.toml` or `requirements.txt`.
-4.  **Design Principle Checklist**: Before proceeding, verify your plan addresses each principle from Step 1.3.
+**章节参考快速指南**（文件位于 `.github/skills/spec-sync/specs/`）：
+- **架构问题** → `05-architecture.md`
+- **技术实现细节** → `03-tech-stack.md`
+- **测试要求** → `04-testing.md`
+- **进度/进度跟踪** → `06-schedule.md`
 
 ---
 
-## Step 3: Implementation
-**Goal**: Write production-ready, compliant code.
+## 步骤 2: 技术规划
+**目标**: 在编写任何一行代码之前，确保模块化和设计原则合规性。
 
-1.  **Coding Standards**:
-    *   **Type Hinting**: Mandatory for all function signatures.
-    *   **Docstrings**: Google-style docstrings for all classes and methods.
-    *   **No Hardcoding**: Use configuration or dependency injection.
-    *   **Clean Code Principles** :
-        - **Single Responsibility**: Each function/class does ONE thing and does it well
-        - **Short & Focused**: Functions should be small (< 20 lines ideal), classes should be cohesive
-        - **Meaningful Names**: Variables/functions reveal intent (`getUserById` not `getData`)
-        - **No Side Effects**: Functions do what their name says, nothing hidden
-        - **DRY**: Abstract common patterns, avoid duplication
-        - **Fail Fast**: Validate inputs early, raise clear exceptions
-2.  **Error Handling**: Implement robust try/except blocks for external integrations (LLMs, Databases).
+1.  **文件策略**: 列出要创建或修改的文件（与进度表中任务的 "Modified Files" 字段交叉检查）。
+2.  **接口设计**: 基于步骤 1.3 中提取的设计原则：
+    - 如果适用 **Pluggable** 原则 → 首先定义抽象基类
+    - 如果适用 **Factory Pattern** → 规划工厂函数签名
+    - 如果适用 **Config-Driven** → 识别需要的 settings.yaml 字段
+3.  **依赖检查**: 如果需要新库，计划更新 `pyproject.toml` 或 `requirements.txt`。
+4.  **设计原则检查清单**: 在继续之前，验证你的计划是否解决了步骤 1.3 中的每个原则。
 
 ---
 
-## Step 4: Self-Verification (Before Testing)
-**Goal**: Self-correction and design principle compliance before handing off to testing-stage.
+## 步骤 3: 实现
+**目标**: 编写生产就绪、合规的代码。
 
-> **Scope**: This is STATIC verification (code review, not execution). Actual test execution happens in Stage 4 (testing-stage).
+1.  **编码标准**:
+    *   **类型提示**: 所有函数签名必须有类型提示。
+    *   **文档字符串**: 所有类和方法使用 Google 风格的文档字符串。
+    *   **不要硬编码**: 使用配置或依赖注入。
+    *   **要有必要的中文代码注释**：使用中文版本的代码注释
+    *   **整洁代码原则** :
+        - **单一职责**: 每个函数/类做一件事并做好
+        - **简短专注**: 函数应该小（< 20 行理想），类应该内聚
+        - **有意义的名称**: 变量/函数揭示意图（`getUserById` 而不是 `getData`）
+        - **无副作用**: 函数做它们名称所说的事，没有隐藏行为
+        - **DRY**: 抽象通用模式，避免重复
+        - **快速失败**: 尽早验证输入，抛出清晰的异常
+2.  **错误处理**: 为外部集成（LLM、数据库）实现健壮的 try/except 块。
 
-1.  **Spec Compliance Check**: Does the generated code violate any constraint found in Step 1?
-2.  **Design Principle Compliance Check**: Verify each principle from Step 1.3 is implemented:
-    - [ ] If **Pluggable** → Is there an abstract base class? Can implementations be swapped?
-    - [ ] If **Factory Pattern** → Does the factory correctly route based on config?
-    - [ ] If **Config-Driven** → Are all magic values moved to settings.yaml?
-    - [ ] If **Fallback** → Is there graceful degradation on failure?
-    - [ ] If **Idempotent** → Are operations safely repeatable?
-3.  **Test File Verification**: Ensure test files are created with proper structure (imports, test cases)
-4.  **Refinement**: If you used placeholders like `pass`, replace them with working logic or a clear `NotImplementedError` with a TODO comment explaining why.
-5.  **Final Output**: Summarize which design principles were applied:
+---
+
+## 步骤 4: 自我验证（测试前）
+**目标**: 在移交给 testing-stage 之前进行自我纠正和设计原则合规性检查。
+
+> **范围**: 这是静态验证（代码审查，不是执行）。实际测试执行在阶段 4（testing-stage）进行。
+
+1.  **规范合规性检查**: 生成的代码是否违反步骤 1 中发现的任何约束？
+2.  **设计原则合规性检查**: 验证步骤 1.3 中的每个原则是否已实现：
+    - [ ] 如果是 **Pluggable** → 是否有抽象基类？实现可以交换吗？
+    - [ ] 如果是 **Factory Pattern** → 工厂是否根据配置正确路由？
+    - [ ] 如果是 **Config-Driven** → 所有魔术值是否已移至 settings.yaml？
+    - [ ] 如果是 **Fallback** → 失败时是否有优雅降级？
+    - [ ] 如果是 **Idempotent** → 操作是否可以安全重复？
+3.  **测试文件验证**: 确保测试文件以正确的结构创建（导入、测试用例）
+4.  **完善**: 如果你使用了 `pass` 等占位符，请用可工作的逻辑替换它们，或用清晰的 `NotImplementedError` 加上 TODO 注释解释原因。
+5.  **最终输出**: 总结应用了哪些设计原则：
     ```
     ────────────────────────────────────
-     DESIGN PRINCIPLES APPLIED
+     已应用的设计原则
     ────────────────────────────────────
-    [x] Pluggable: BaseLLM abstract class defined
-    [x] Factory: LLMFactory.create() routes by provider
-    [x] Config-Driven: Provider read from settings.llm.provider
-    [x] Error Handling: Unknown provider raises ValueError
+    [x] Pluggable: 定义了 BaseLLM 抽象类
+    [x] Factory: LLMFactory.create() 根据提供者路由
+    [x] Config-Driven: 从 settings.llm.provider 读取提供者
+    [x] Error Handling: 未知提供者抛出 ValueError
     ────────────────────────────────────
     ```
 

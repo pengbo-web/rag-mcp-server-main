@@ -1,133 +1,133 @@
 ---
 name: dev-workflow
-description: Master orchestrator for development workflow. Use when user says "下一阶段", "继续开发", "next task", "proceed", or asks to continue development. Coordinates spec-sync, progress-tracker, implement, testing-stage, and checkpoint skills in a pipeline to complete one sub-task per iteration.
+description: 开发工作流程的主协调器。当用户说"下一阶段"、"继续开发"、"next task"、"proceed"或要求继续开发时使用。在流水线中协调 spec-sync、progress-tracker、implement、testing-stage 和 checkpoint 技能，每次迭代完成一个子任务。
 metadata:
   category: orchestration
   triggers: "next task, proceed, continue development, 下一阶段, 继续开发"
 allowed-tools: Read
 ---
 
-# Development Workflow Orchestrator
+# Development Workflow Orchestrator（开发工作流程协调器）
 
-You are the **Project Manager AI** for the Modular RAG MCP Server. When the user asks to proceed with development, you MUST execute the following pipeline **in order**.
+你是 Modular RAG MCP Server 的**项目管理 AI**。当用户要求继续开发时，你必须**按顺序**执行以下流水线。
 
-> **This is a Meta-Skill**: It orchestrates other skills. Each stage's **specific implementation details** are defined in the respective skill's SKILL.md file. This file only defines **pipeline flow** and **inter-stage coordination**.
+> **这是一个元技能**: 它协调其他技能。每个阶段的**具体实现细节**在相应技能的 SKILL.md 文件中定义。本文件只定义**流水线流程**和**阶段间协调**。
 
 ---
 
-## Stage 0: Activate Virtual Environment (Pre-requisite)
+## 阶段 0: 激活虚拟环境（前置条件）
 
-**Before executing any pipeline stage**, activate the project's virtual environment:
+**在执行任何流水线阶段之前**，激活项目的虚拟环境：
 
 ```powershell
 # Windows PowerShell
 .\.venv\Scripts\Activate.ps1
 ```
 
-> his step is mandatory and must be completed before invoking any sub-skill.
+> 此步骤是强制性的，必须在调用任何子技能之前完成。
 
 ---
 
-## Pipeline Stages
+## 流水线阶段
 
-| Stage | Skill | Description | Skill File |
+| 阶段 | 技能 | 说明 | 技能文件 |
 |-------|-------|-------------|------------|
-| 1 | `spec-sync` | Sync spec documents | `.github/skills/spec-sync/SKILL.md` |
-| 2 | `progress-tracker` | Find next task | `.github/skills/progress-tracker/SKILL.md` |
-| 3 | `implement` | Execute implementation | `.github/skills/implement/SKILL.md` |
-| 4 | `testing-stage` | Run tests | `.github/skills/testing-stage/SKILL.md` |
-| 5 | `checkpoint` | Save progress | `.github/skills/checkpoint/SKILL.md` |
+| 1 | `spec-sync` | 同步规范文档 | `.github/skills/spec-sync/SKILL.md` |
+| 2 | `progress-tracker` | 查找下一个任务 | `.github/skills/progress-tracker/SKILL.md` |
+| 3 | `implement` | 执行实现 | `.github/skills/implement/SKILL.md` |
+| 4 | `testing-stage` | 运行测试 | `.github/skills/testing-stage/SKILL.md` |
+| 5 | `checkpoint` | 保存进度 | `.github/skills/checkpoint/SKILL.md` |
 
-> **For detailed execution steps, completion criteria, and output formats for each stage, refer to the corresponding SKILL.md file.**
+> **有关每个阶段的详细执行步骤、完成标准和输出格式，请参阅相应的 SKILL.md 文件。**
 
 ---
 
-## Pipeline Flow
+## 流水线流程
 
 ```
                     ┌──────────────────┐
-                    │   User: "下一阶段"  │
+                    │  用户: "下一阶段"  │
                     └────────┬─────────┘
                              ▼
                   ┌──────────────────────┐
-                  │  Stage 1: spec-sync  │
+                  │  阶段 1: spec-sync   │
                   └────────┬─────────────┘
                            ▼
                   ┌──────────────────────┐
-                  │ Stage 2: progress-   │
+                  │ 阶段 2: progress-    │
                   │         tracker      │
                   └────────┬─────────────┘
                            │
-                     ️ Exception? ──→ User Confirm → Update DEV_SPEC → Back to Stage1
+                     ️ 异常? ──→ 用户确认 → 更新 DEV_SPEC → 返回阶段1
                            │
                            ▼
                   ┌──────────────────────┐
-          ┌──────▶│ Stage 3: implement   │
+          ┌──────▶│ 阶段 3: implement    │
           │       └────────┬─────────────┘
           │                ▼
           │       ┌──────────────────────┐
-          │       │ Stage 4: testing-    │
+          │       │ 阶段 4: testing-     │
           │       │         stage        │
           │       └────────┬─────────────┘
           │                ▼
           │           ┌─────────┐
-          │           │ Tests   │
-          │           │ Pass?   │
+          │           │ 测试    │
+          │           │ 通过?   │
           │           └────┬────┘
-          │     No         │         Yes
+          │     否         │         是
           │     ┌──────────┴──────────┐
           │     ▼                     ▼
-          │ Iteration < 3?     ┌──────────────────────┐
-          │     │              │  Stage 5: checkpoint │
-          │ Yes │              └──────────────────────┘
+          │ 迭代 < 3?      ┌──────────────────────┐
+          │     │          │  阶段 5: checkpoint  │
+          │ 是  │          └──────────────────────┘
           └─────┘
-                │ No (iteration >= 3)
+                │ 否 (迭代 >= 3)
                 ▼
           ┌──────────────────┐
-          │ Escalate to User │
+          │   上报给用户     │
           └──────────────────┘
 ```
 
 ---
 
-## Inter-Stage Data Flow
+## 阶段间数据流
 
-The orchestrator is responsible for passing context between stages:
+协调器负责在阶段之间传递上下文：
 
-| From | To | Data Passed |
+| 来源 | 目标 | 传递的数据 |
 |------|----|-------------|
-| Stage 2 | Stage 3 | Task ID, Task Name, Relevant Spec Chapters |
-| Stage 3 | Stage 4 | Files Changed, Module Paths |
-| Stage 4 | Stage 3 | Test Failures (on failure, for iteration) |
-| Stage 4 | Stage 5 | Test Results, Iteration Count |
-| Stage 2,3,4 | Stage 5 | Task ID, Files Changed, Test Summary |
+| 阶段 2 | 阶段 3 | Task ID, Task Name, 相关规范章节 |
+| 阶段 3 | 阶段 4 | 修改的文件, 模块路径 |
+| 阶段 4 | 阶段 3 | 测试失败信息（失败时，用于迭代） |
+| 阶段 4 | 阶段 5 | 测试结果, 迭代次数 |
+| 阶段 2,3,4 | 阶段 5 | Task ID, 修改的文件, 测试摘要 |
 
 ---
 
-## Quick Commands
+## 快速命令
 
-> **Important Note**: Each execution of "next task" completes **one sub-task** (e.g., A1 → A2 → A3), not an entire phase (e.g., Phase A → Phase B).
+> **重要提示**: 每次执行 "next task" 完成**一个子任务**（例如 A1 → A2 → A3），而不是整个阶段（例如 Phase A → Phase B）。
 
-| User Says | Pipeline Behavior |
+| 用户说 | 流水线行为 |
 |-----------|-------------------|
-| "next task" / "下一阶段" | Full pipeline (Stage 1-5), completes **next sub-task** |
-| "continue" / "继续实现" | Skip to Stage 3 (assumes task known) |
-| "status" / "检查进度" | Stage 2 only |
-| "sync spec" / "同步规范" | Stage 1 only |
-| "run tests" / "运行测试" | Stage 4 only |
-| "fix progress" / "修正进度" | Stage 2 validation + DEV_SPEC update |
+| "next task" / "下一阶段" | 完整流水线（阶段 1-5），完成**下一个子任务** |
+| "continue" / "继续实现" | 跳到阶段 3（假设任务已知） |
+| "status" / "检查进度" | 仅阶段 2 |
+| "sync spec" / "同步规范" | 仅阶段 1 |
+| "run tests" / "运行测试" | 仅阶段 4 |
+| "fix progress" / "修正进度" | 阶段 2 验证 + DEV_SPEC 更新 |
 
 ---
 
-## Orchestrator Rules
+## 协调器规则
 
-1. **Delegation**: Each stage's specific logic is defined by its skill; the orchestrator only handles invocation and flow
-2. **Spec is Source of Truth**: Progress tracking is based on `DEV_SPEC.md`
-3. **Stage Order**: Execute in 1→2→3→4→5 order unless explicitly specified otherwise
-4. **Single Sub-Task**: Each pipeline run completes **one sub-task**
-5. **User Confirmation**: Wait for user confirmation after Stage 2 before continuing
-6. **Test Before Checkpoint**: Stage 4 must pass before entering Stage 5
-7. **Iteration Discipline**: Enforce 3-iteration limit
-8. **Two-Step Checkpoint**: Stage 5 requires two user confirmations:
-   - First: Verify work summary (then auto-update DEV_SPEC.md)
-   - Second: Decide whether to execute git commit
+1. **委托**: 每个阶段的具体逻辑由其技能定义；协调器只处理调用和流程
+2. **规范是真实来源**: 进度跟踪基于 `DEV_SPEC.md`
+3. **阶段顺序**: 按 1→2→3→4→5 顺序执行，除非明确指定其他顺序
+4. **单个子任务**: 每次流水线运行完成**一个子任务**
+5. **用户确认**: 在阶段 2 之后等待用户确认再继续
+6. **测试后检查点**: 阶段 4 必须通过才能进入阶段 5
+7. **迭代纪律**: 强制执行 3 次迭代限制
+8. **两步检查点**: 阶段 5 需要两次用户确认：
+   - 第一次: 验证工作总结（然后自动更新 DEV_SPEC.md）
+   - 第二次: 决定是否执行 git commit

@@ -1,74 +1,74 @@
 ---
 name: progress-tracker
-description: Identify next development task from project schedule and validate claimed progress against actual codebase state. Serves as GPS for development - tells you where you are and where to go next. Stage 2 of dev-workflow pipeline. Use when user says "检查进度", "status", "下一个任务", "what's next", "定位任务".
+description: 从项目进度表中识别下一个开发任务，并验证声明的进度是否与实际代码库状态匹配。作为开发的 GPS - 告诉你现在在哪里以及下一步去哪里。dev-workflow 流水线的阶段 2。当用户说"检查进度"、"status"、"下一个任务"、"what's next"、"定位任务"时使用。
 metadata:
   category: progress-tracking
   triggers: "status, what's next, find task, 检查进度, 下一个任务, 定位任务"
 allowed-tools: Read Bash(python:*)
 ---
 
-#  Progress Tracker & Task Discovery
+# Progress Tracker & Task Discovery（进度跟踪与任务发现）
 
-This skill identifies the **next development task** from the project schedule and **validates** that claimed progress matches actual code state. It serves as the "GPS" for development - telling you where you are and where to go next.
+此技能从项目进度表中识别**下一个开发任务**，并**验证**声明的进度是否与实际代码状态匹配。它充当开发的 "GPS" - 告诉你现在在哪里以及下一步去哪里。
 
-> **Single Responsibility**: Locate → Validate → Confirm
-
----
-
-## When to Use This Skill
-
-- When you need to **find the next task** to work on
-- When you want to **check current project progress**
-- When you suspect **progress tracking is out of sync** with actual code
-- As **Stage 2** of the `dev-workflow` pipeline
-- After a break to **resume development** from the correct point
+> **单一职责**: 定位 → 验证 → 确认
 
 ---
 
-## Workflow
+## 何时使用此技能
+
+- 当你需要**查找下一个任务**时
+- 当你想要**检查当前项目进度**时
+- 当你怀疑**进度跟踪与实际代码不同步**时
+- 作为 `dev-workflow` 流水线的**阶段 2**
+- 休息后**从正确的点恢复开发**时
+
+---
+
+## 工作流程
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  Step 1              Step 2                Step 3              Step 4        │
+│  步骤 1              步骤 2                步骤 3              步骤 4        │
 │  ────────            ────────              ────────            ────────      │
-│  Data Collection  →  Progress Validation → Task Identification → Confirm    │
-│  (Data Prep)         (Validation)          (Task Confirm)       (User OK)    │
+│  数据收集      →    进度验证      →      任务识别      →      确认          │
+│  (Data Prep)        (Validation)          (Task Confirm)      (User OK)     │
 │                          │                                                   │
 │                          ▼                                                   │
-│                     ️ Mismatch? → Escalate to User → Fix DEV_SPEC          │
+│                     ️ 不匹配? → 上报给用户 → 修正 DEV_SPEC                   │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Step 1: Data Collection
+## 步骤 1: 数据收集
 
-**Goal**: Gather information about claimed progress and actual code state.
+**目标**: 收集关于声明的进度和实际代码状态的信息。
 
-### 1.1 Read Schedule from Spec
+### 1.1 从规范读取进度表
 
-1. Read `.github/skills/spec-sync/specs/06-schedule.md` (Project Schedule)
-2. Parse the task table to identify:
-   - All tasks and their status markers
-   - Current phase (A, B, C, D, E, F)
-   - Tasks marked as completed vs in-progress vs not-started
+1. 读取 `.github/skills/spec-sync/specs/06-schedule.md`（项目进度表）
+2. 解析任务表以识别：
+   - 所有任务及其状态标记
+   - 当前阶段（A, B, C, D, E, F）
+   - 标记为已完成 vs 进行中 vs 未开始的任务
 
-### 1.2 Status Marker Recognition
+### 1.2 状态标记识别
 
-| Marker | Meaning | Status |
+| 标记 | 含义 | 状态 |
 |--------|---------|--------|
-| `[ ]` | Not started | `NOT_STARTED` |
-| `` | Not started | `NOT_STARTED` |
-| `[~]` | In progress | `IN_PROGRESS` |
-| `` | In progress | `IN_PROGRESS` |
-| `[x]` | Completed | `COMPLETED` |
-| `` | Completed | `COMPLETED` |
-| `(进行中)` | In progress | `IN_PROGRESS` |
-| `(已完成)` | Completed | `COMPLETED` |
+| `[ ]` | 未开始 | `NOT_STARTED` |
+| ⏳ | 未开始 | `NOT_STARTED` |
+| `[~]` | 进行中 | `IN_PROGRESS` |
+| 🚧 | 进行中 | `IN_PROGRESS` |
+| `[x]` | 已完成 | `COMPLETED` |
+| ✅ | 已完成 | `COMPLETED` |
+| `(进行中)` | 进行中 | `IN_PROGRESS` |
+| `(已完成)` | 已完成 | `COMPLETED` |
 
-### 1.3 Build Task List
+### 1.3 构建任务列表
 
-**Output Structure**:
+**输出结构**:
 ```
 Phase A: 基础架构搭建
   [x] A1: 项目骨架初始化
@@ -84,29 +84,29 @@ Phase B: 核心模块开发
 
 ---
 
-## Step 2: Progress Validation
+## 步骤 2: 进度验证
 
-**Goal**: Verify that claimed progress matches actual codebase state.
+**目标**: 验证声明的进度是否与实际代码库状态匹配。
 
-### 2.1 Identify Verification Targets
+### 2.1 识别验证目标
 
-For each task marked as `COMPLETED` or `IN_PROGRESS`, identify expected artifacts:
+对于每个标记为 `COMPLETED` 或 `IN_PROGRESS` 的任务，识别预期的产物：
 
-| Task | Expected Artifacts |
+| 任务 | 预期产物 |
 |------|-------------------|
-| A1: 项目骨架 | `pyproject.toml`, `src/`, `tests/` directories |
-| A2: 日志系统 | `src/core/logging.py`, logging configuration |
+| A1: 项目骨架 | `pyproject.toml`, `src/`, `tests/` 目录 |
+| A2: 日志系统 | `src/core/logging.py`, 日志配置 |
 | A3: 配置加载 | `src/core/settings.py`, `settings.yaml` |
 | B1: LLM工厂 | `src/llm/base.py`, `src/llm/factory.py` |
 
-### 2.2 Verify Artifacts Exist
+### 2.2 验证产物存在
 
-For each expected artifact:
-1. Check if file/directory exists
-2. For code files, verify basic structure (imports work, classes defined)
-3. Check if related tests exist and pass basic import
+对于每个预期产物：
+1. 检查文件/目录是否存在
+2. 对于代码文件，验证基本结构（导入正常，类已定义）
+3. 检查相关测试是否存在并通过基本导入
 
-**Verification Commands**:
+**验证命令**:
 ```bash
 # Check file exists
 test -f src/core/settings.py && echo "EXISTS" || echo "MISSING"
@@ -115,200 +115,200 @@ test -f src/core/settings.py && echo "EXISTS" || echo "MISSING"
 python -c "from src.core.settings import Settings" 2>&1
 ```
 
-### 2.3 Detect and Handle Mismatches
+### 2.3 检测和处理不匹配
 
-**Mismatch Types**:
+**不匹配类型**:
 
-| Type | Description | Severity |
+| 类型 | 描述 | 严重性 |
 |------|-------------|----------|
-| `MISSING_FILE` | Task marked complete but file doesn't exist | High |
-| `IMPORT_ERROR` | File exists but has import/syntax errors | High |
-| `MISSING_TESTS` | Implementation exists but no tests | Medium |
-| `STALE_PROGRESS` | Task marked "in progress" for multiple sessions | Medium |
+| `MISSING_FILE` | 任务标记完成但文件不存在 | 高 |
+| `IMPORT_ERROR` | 文件存在但有导入/语法错误 | 高 |
+| `MISSING_TESTS` | 实现存在但没有测试 | 中 |
+| `STALE_PROGRESS` | 任务标记"进行中"多个会话 | 中 |
 
-**If any mismatch detected**, escalate to user:
+**如果检测到任何不匹配**，上报给用户：
 
 ```
 ────────────────────────────────────────────────────
-️ PROGRESS INCONSISTENCY DETECTED
+️ 检测到进度不一致
 ────────────────────────────────────────────────────
 
-Schedule Claims: Phase B1 - LLM Factory (in progress)
-Actual State: Phase A3 - Config Loading (incomplete)
+进度表声明: Phase B1 - LLM Factory (进行中)
+实际状态: Phase A3 - Config Loading (未完成)
 
-Missing Items:
-   src/core/settings.py - NOT FOUND
-   tests/unit/test_config_loading.py - NOT FOUND
-   A2 logging tests not verified
+缺失项:
+   src/core/settings.py - 未找到
+   tests/unit/test_config_loading.py - 未找到
+   A2 日志测试未验证
 
 ────────────────────────────────────────────────────
-OPTIONS:
+选项:
 ────────────────────────────────────────────────────
 
-1. Fix progress tracking in DEV_SPEC.md
-    → Update markers to reflect actual state
-    → Re-run spec-sync
-    → Restart task discovery
+1. 修正 DEV_SPEC.md 中的进度跟踪
+    → 更新标记以反映实际状态
+    → 重新运行 spec-sync
+    → 重启任务发现
     
-2. Confirm previous tasks as completed
-    → Code may be in different location/branch
-    → Provide explanation and proceed
+2. 确认之前的任务已完成
+    → 代码可能在不同位置/分支
+    → 提供解释并继续
     
-3. Continue from actual progress
-    → Skip incomplete tasks
-    → Start from where code actually is
+3. 从实际进度继续
+    → 跳过未完成的任务
+    → 从代码实际所在位置开始
 
-Please choose an option (1/2/3):
+请选择一个选项 (1/2/3):
 ────────────────────────────────────────────────────
 ```
 
-### Handling Each Option
+### 处理每个选项
 
-**Option 1: Fix DEV_SPEC.md**
-1. User provides corrected progress state
-2. Update `DEV_SPEC.md` directly (the GLOBAL file)
-3. Run `python .github/skills/spec-sync/sync_spec.py`
-4. **Restart from Step 1** of this skill
+**选项 1: 修正 DEV_SPEC.md**
+1. 用户提供修正后的进度状态
+2. 直接更新 `DEV_SPEC.md`（全局文件）
+3. 运行 `python .github/skills/spec-sync/sync_spec.py`
+4. **从此技能的步骤 1 重新开始**
 
-**Option 2: Confirm Complete**
-1. User explains where the code is
-2. Document the explanation in session
-3. Proceed to Step 3 with user's confirmation
+**选项 2: 确认完成**
+1. 用户解释代码在哪里
+2. 在会话中记录解释
+3. 带着用户的确认进入步骤 3
 
-**Option 3: Continue from Actual**
-1. Identify the actual current task based on code state
-2. Override the schedule's claimed position
-3. Proceed to Step 3 with the corrected task
+**选项 3: 从实际状态继续**
+1. 根据代码状态识别实际当前任务
+2. 覆盖进度表的声明位置
+3. 带着修正后的任务进入步骤 3
 
 ---
 
-## Step 3: Task Identification
+## 步骤 3: 任务识别
 
-**Goal**: Clearly identify the single next task to work on.
+**目标**: 清晰识别要处理的单个下一个任务。
 
-### 3.1 Determine Next Task
+### 3.1 确定下一个任务
 
-**Priority Logic**:
-1. If any task is `IN_PROGRESS` → That is the current task
-2. Otherwise, find the first `NOT_STARTED` task → That is the next task
-3. If all tasks complete → Report "All tasks complete"
+**优先级逻辑**:
+1. 如果任何任务是 `IN_PROGRESS` → 那是当前任务
+2. 否则，找到第一个 `NOT_STARTED` 任务 → 那是下一个任务
+3. 如果所有任务完成 → 报告 "所有任务完成"
 
-### 3.2 Gather Task Context
+### 3.2 收集任务上下文
 
-For the identified task, collect:
-- **Task ID**: e.g., `A3`, `B1`
-- **Task Name**: e.g., "配置加载与校验"
-- **Phase**: e.g., "Phase A: 基础架构搭建"
-- **Spec Section**: Which chapter file contains implementation details
-- **Dependencies**: Previous tasks that should be complete
+对于识别的任务，收集：
+- **Task ID**: 例如 `A3`, `B1`
+- **任务名称**: 例如 "配置加载与校验"
+- **阶段**: 例如 "Phase A: 基础架构搭建"
+- **规范章节**: 哪个章节文件包含实现细节
+- **依赖项**: 应该完成的先前任务
 
-### 3.3 Output Task Information
+### 3.3 输出任务信息
 
 ```
 ────────────────────────────────────────────────────
- CURRENT TASK IDENTIFIED
+ 识别到当前任务
 ────────────────────────────────────────────────────
 
-Phase:    A - 基础架构搭建
+阶段:    A - 基础架构搭建
 Task ID:  A3
-Name:     配置加载与校验
-Status:   IN_PROGRESS ()
+名称:     配置加载与校验
+状态:   IN_PROGRESS (🚧)
 
-Spec Reference:
-  Schedule: specs/06-schedule.md (line XX)
-  Details:  specs/03-tech-stack.md Section 3.2
+规范引用:
+  进度表: specs/06-schedule.md (line XX)
+  详情:  specs/03-tech-stack.md Section 3.2
 
-Dependencies:
-   A1: 项目骨架初始化
-   A2: 日志系统搭建
+依赖项:
+  ✅ A1: 项目骨架初始化
+  ✅ A2: 日志系统搭建
 
-Verification: Progress validated 
+验证: 进度已验证 ✓
 ────────────────────────────────────────────────────
 ```
 
 ---
 
-## Step 4: User Confirmation
+## 步骤 4: 用户确认
 
-**Goal**: Get explicit user confirmation before proceeding.
+**目标**: 在继续之前获得明确的用户确认。
 
-### 4.1 Request Confirmation
+### 4.1 请求确认
 
 ```
 ────────────────────────────────────────────────────
- CONFIRM TASK
+ 确认任务
 ────────────────────────────────────────────────────
 
-Ready to work on:
+准备处理:
   [A3] 配置加载与校验
 
-Options:
-   Confirm / 确认 - Proceed with this task
-   Override / 指定其他 - Specify a different task
-   Cancel / 取消 - Stop and review
+选项:
+   Confirm / 确认 - 继续此任务
+   Override / 指定其他 - 指定不同的任务
+   Cancel / 取消 - 停止并审查
 
-Your choice:
+你的选择:
 ────────────────────────────────────────────────────
 ```
 
-### 4.2 Handle User Response
+### 4.2 处理用户响应
 
-| Response | Action |
+| 响应 | 操作 |
 |----------|--------|
-| Confirm / 确认 / Yes | Return task info to caller (dev-workflow Stage 3) |
-| Override / 指定其他 | Ask for task ID, validate it exists, return that task |
-| Cancel / 取消 | Stop the workflow, return to idle state |
+| Confirm / 确认 / Yes | 将任务信息返回给调用者（dev-workflow 阶段 3） |
+| Override / 指定其他 | 询问 task ID，验证其存在，返回该任务 |
+| Cancel / 取消 | 停止工作流程，返回空闲状态 |
 
 ---
 
-## Quick Commands
+## 快速命令
 
-| User Says | Behavior |
+| 用户说 | 行为 |
 |-----------|----------|
-| "status" / "检查进度" | Steps 1-3 (report current state, no confirmation needed) |
-| "what's next" / "下一个任务" | Steps 1-3 (identify next task) |
-| "find task" / "定位任务" | Full workflow (Steps 1-4) |
-| "validate" / "验证进度" | Steps 1-2 only (validation report) |
-| "fix progress" / "修正进度" | Step 2.4 workflow (mismatch handling) |
+| "status" / "检查进度" | 步骤 1-3（报告当前状态，无需确认） |
+| "what's next" / "下一个任务" | 步骤 1-3（识别下一个任务） |
+| "find task" / "定位任务" | 完整工作流程（步骤 1-4） |
+| "validate" / "验证进度" | 仅步骤 1-2（验证报告） |
+| "fix progress" / "修正进度" | 步骤 2.4 工作流程（不匹配处理） |
 
 ---
 
-## Output Contract
+## 输出约定
 
-When called by `dev-workflow`, this skill returns:
+当被 `dev-workflow` 调用时，此技能返回：
 
-**Status Types**: `OK` | `MISMATCH` | `ALL_COMPLETE` | `CANCELLED`
+**状态类型**: `OK` | `MISMATCH` | `ALL_COMPLETE` | `CANCELLED`
 
-**If status == OK**:
+**如果 status == OK**:
 
-| Field | Example Value |
+| 字段 | 示例值 |
 |-------|---------------|
 | Task ID | `A3` |
-| Task Name | `配置加载与校验` |
-| Phase | `A - 基础架构搭建` |
-| Spec Schedule Reference | `specs/06-schedule.md` line 142 |
-| Spec Detail File | `specs/03-tech-stack.md` Section 3.2 |
-| Dependencies Met | Yes/No |
+| 任务名称 | `配置加载与校验` |
+| 阶段 | `A - 基础架构搭建` |
+| 规范进度表引用 | `specs/06-schedule.md` line 142 |
+| 规范详细文件 | `specs/03-tech-stack.md` Section 3.2 |
+| 依赖项已满足 | Yes/No |
 
-**If status == MISMATCH**:
-- Claimed Task vs Actual Task
-- List of missing items
-- User choice needed: Fix DEV_SPEC / Confirm / Continue from actual
+**如果 status == MISMATCH**:
+- 声明的任务 vs 实际任务
+- 缺失项列表
+- 需要用户选择: 修正 DEV_SPEC / 确认 / 从实际状态继续
 
 ---
 
-## Important Rules
+## 重要规则
 
-1. **Always Validate Before Proceeding**: Never assume the schedule is accurate. Always check actual code state.
+1. **始终在继续前验证**: 永远不要假设进度表是准确的。始终检查实际代码状态。
 
-2. **User Confirmation Required**: Don't auto-proceed to implementation. Wait for explicit user confirmation.
+2. **需要用户确认**: 不要自动进入实现。等待明确的用户确认。
 
-3. **Single Task Focus**: Identify ONE task at a time. Don't batch-identify multiple tasks.
+3. **单任务聚焦**: 一次识别一个任务。不要批量识别多个任务。
 
-4. **Dependency Awareness**: Warn if previous tasks appear incomplete, but let user decide how to proceed.
+4. **依赖项意识**: 如果先前任务似乎未完成则发出警告，但让用户决定如何继续。
 
-5. **Non-Destructive**: This skill only READS and REPORTS. It doesn't modify code or spec files (except when user explicitly chooses Option 1 in mismatch handling).
+5. **非破坏性**: 此技能只读取和报告。它不修改代码或规范文件（除非用户在不匹配处理中明确选择选项 1）。
 
-6. **Graceful Degradation**: If spec files are missing, fall back to reading `DEV_SPEC.md` directly.
+6. **优雅降级**: 如果规范文件缺失，回退到直接读取 `DEV_SPEC.md`。
 
 ---
