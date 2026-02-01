@@ -1,10 +1,10 @@
 """
-Settings Module - Configuration loading and validation.
+设置模块 - 配置加载与验证。
 
-This module provides:
-- Settings dataclass: Structured configuration container
-- load_settings(): Load and parse settings from YAML file
-- validate_settings(): Validate required configuration fields
+此模块提供：
+- Settings 数据类：结构化配置容器
+- load_settings()：从 YAML 文件加载和解析设置
+- validate_settings()：验证必需的配置字段
 """
 
 import os
@@ -16,13 +16,13 @@ import yaml
 
 
 class SettingsError(Exception):
-    """Exception raised for configuration errors."""
+    """配置错误时抛出的异常。"""
     pass
 
 
 @dataclass
 class LLMSettings:
-    """LLM configuration settings."""
+    """LLM 配置设置。"""
     provider: str
     model: str
     api_key: Optional[str] = None
@@ -34,7 +34,7 @@ class LLMSettings:
 
 @dataclass
 class EmbeddingSettings:
-    """Embedding configuration settings."""
+    """嵌入模型配置设置。"""
     provider: str
     model: str
     api_key: Optional[str] = None
@@ -44,7 +44,7 @@ class EmbeddingSettings:
 
 @dataclass
 class VectorStoreSettings:
-    """Vector store configuration settings."""
+    """向量存储配置设置。"""
     provider: str
     persist_directory: str = "./data/db/chroma"
     collection_name: str = "default"
@@ -52,7 +52,7 @@ class VectorStoreSettings:
 
 @dataclass
 class RetrievalSettings:
-    """Retrieval configuration settings."""
+    """检索配置设置。"""
     dense_weight: float = 0.7
     sparse_weight: float = 0.3
     top_k: int = 10
@@ -61,7 +61,7 @@ class RetrievalSettings:
 
 @dataclass
 class RerankSettings:
-    """Reranker configuration settings."""
+    """重排序配置设置。"""
     provider: str = "none"
     model: Optional[str] = None
     top_k: int = 5
@@ -69,14 +69,14 @@ class RerankSettings:
 
 @dataclass
 class EvaluationSettings:
-    """Evaluation configuration settings."""
+    """评估配置设置。"""
     provider: str = "custom"
     metrics: List[str] = field(default_factory=lambda: ["hit_rate", "mrr"])
 
 
 @dataclass
 class ObservabilitySettings:
-    """Observability configuration settings."""
+    """可观测性配置设置。"""
     log_level: str = "INFO"
     trace_enabled: bool = True
     trace_output: str = "./logs/traces.jsonl"
@@ -85,7 +85,7 @@ class ObservabilitySettings:
 
 @dataclass
 class IngestionSettings:
-    """Ingestion configuration settings."""
+    """数据摄取配置设置。"""
     chunk_size: int = 1000
     chunk_overlap: int = 200
     batch_size: int = 50
@@ -94,17 +94,17 @@ class IngestionSettings:
 @dataclass
 class Settings:
     """
-    Main settings container for the RAG MCP Server.
+    RAG MCP Server 的主设置容器。
     
-    Contains all configuration sections:
-    - llm: LLM provider settings
-    - embedding: Embedding service settings
-    - vector_store: Vector database settings
-    - retrieval: Retrieval parameters
-    - rerank: Reranker settings
-    - evaluation: Evaluation metrics settings
-    - observability: Logging and tracing settings
-    - ingestion: Data ingestion settings
+    包含所有配置部分：
+    - llm: LLM 提供商设置
+    - embedding: 嵌入模型服务设置
+    - vector_store: 向量数据库设置
+    - retrieval: 检索参数
+    - rerank: 重排序设置
+    - evaluation: 评估指标设置
+    - observability: 日志和跟踪设置
+    - ingestion: 数据摄取设置
     """
     llm: LLMSettings
     embedding: EmbeddingSettings
@@ -118,15 +118,15 @@ class Settings:
 
 def _resolve_env_vars(value: Any) -> Any:
     """
-    Resolve environment variable references in configuration values.
+    解析配置值中的环境变量引用。
     
-    Supports ${VAR_NAME} syntax for environment variable substitution.
+    支持 ${VAR_NAME} 语法进行环境变量替换。
     
     Args:
-        value: Configuration value that may contain env var references.
+        value: 可能包含环境变量引用的配置值。
         
     Returns:
-        Resolved value with environment variables substituted.
+        解析后的值，已替换环境变量。
     """
     if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
         env_var = value[2:-1]
@@ -136,24 +136,24 @@ def _resolve_env_vars(value: Any) -> Any:
 
 def _parse_section(data: Dict[str, Any], section_name: str, dataclass_type: type) -> Any:
     """
-    Parse a configuration section into a dataclass instance.
+    将配置部分解析为数据类实例。
     
     Args:
-        data: Raw configuration dictionary.
-        section_name: Name of the section to parse.
-        dataclass_type: Target dataclass type.
+        data: 原始配置字典。
+        section_name: 要解析的部分名称。
+        dataclass_type: 目标数据类类型。
         
     Returns:
-        Instance of the dataclass with parsed values.
+        带有解析值的数据类实例。
         
     Raises:
-        SettingsError: If required section is missing.
+        SettingsError: 如果缺少必需部分。
     """
     section_data = data.get(section_name, {})
     if section_data is None:
         section_data = {}
     
-    # Resolve environment variables in values
+    # 解析值中的环境变量
     resolved_data = {
         key: _resolve_env_vars(value) 
         for key, value in section_data.items()
@@ -167,33 +167,33 @@ def _parse_section(data: Dict[str, Any], section_name: str, dataclass_type: type
 
 def validate_settings(settings: Settings) -> None:
     """
-    Validate that all required settings are present and valid.
+    验证所有必需设置是否存在且有效。
     
     Args:
-        settings: Settings instance to validate.
+        settings: 要验证的 Settings 实例。
         
     Raises:
-        SettingsError: If validation fails with details about missing/invalid fields.
+        SettingsError: 如果验证失败，并包含缺失/无效字段的详细信息。
     """
     errors = []
     
-    # Validate LLM settings
+    # 验证 LLM 设置
     if not settings.llm.provider:
         errors.append("llm.provider is required")
     if not settings.llm.model:
         errors.append("llm.model is required")
     
-    # Validate Embedding settings
+    # 验证 Embedding 设置
     if not settings.embedding.provider:
         errors.append("embedding.provider is required")
     if not settings.embedding.model:
         errors.append("embedding.model is required")
     
-    # Validate Vector Store settings
+    # 验证 Vector Store 设置
     if not settings.vector_store.provider:
         errors.append("vector_store.provider is required")
     
-    # Validate retrieval weights sum to 1.0 (with tolerance)
+    # 验证检索权重总和为 1.0（带容差）
     weight_sum = settings.retrieval.dense_weight + settings.retrieval.sparse_weight
     if abs(weight_sum - 1.0) > 0.01:
         errors.append(
@@ -208,16 +208,16 @@ def validate_settings(settings: Settings) -> None:
 
 def load_settings(path: str) -> Settings:
     """
-    Load settings from a YAML configuration file.
+    从 YAML 配置文件加载设置。
     
     Args:
-        path: Path to the settings.yaml file.
+        path: settings.yaml 文件的路径。
         
     Returns:
-        Settings: Parsed and validated settings object.
+        Settings: 解析并验证后的设置对象。
         
     Raises:
-        SettingsError: If file not found, parse error, or validation fails.
+        SettingsError: 如果文件未找到、解析错误或验证失败。
     """
     config_path = Path(path)
     
@@ -233,7 +233,7 @@ def load_settings(path: str) -> Settings:
     if data is None:
         raise SettingsError("Configuration file is empty")
     
-    # Parse each section
+    # 解析每个部分
     settings = Settings(
         llm=_parse_section(data, "llm", LLMSettings),
         embedding=_parse_section(data, "embedding", EmbeddingSettings),
@@ -245,7 +245,7 @@ def load_settings(path: str) -> Settings:
         ingestion=_parse_section(data, "ingestion", IngestionSettings),
     )
     
-    # Validate settings
+    # 验证设置
     validate_settings(settings)
     
     return settings

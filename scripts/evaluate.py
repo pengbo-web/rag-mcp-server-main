@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-Evaluation Script
+评估脚本
 
-Usage:
+用法：
     python scripts/evaluate.py --dataset <path> [--config <config_path>]
 
-This script evaluates the RAG system performance using benchmark datasets.
-Will be fully implemented in Phase D (Evaluation).
+此脚本使用基准数据集评估 RAG 系统性能。
+将在阶段 D（评估）中完整实现。
 """
 
 import argparse
@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def main():
-    """Main entry point for evaluation script."""
+    """评估脚本的主入口点。"""
     parser = argparse.ArgumentParser(description="Evaluate RAG system performance")
     parser.add_argument("--dataset", "-d", required=True, help="Path to evaluation dataset")
     parser.add_argument("--config", "-c", default="config/settings.yaml", help="Configuration file path")
@@ -34,11 +34,11 @@ def main():
     print(f"[INFO] Full implementation coming in Phase D")
     
     # TODO: Implement in Phase D
-    # 1. Load configuration and evaluation dataset
-    # 2. Initialize RAG system
-    # 3. Run queries and collect results
-    # 4. Calculate metrics (hit_rate, MRR, NDCG, etc.)
-    # 5. Generate report
+    # 1. 加载配置和评估数据集
+    # 2. 初始化 RAG 系统
+    # 3. 运行查询并收集结果
+    # 4. 计算指标（hit_rate, MRR, NDCG 等）
+    # 5. 生成报告
     
     return 0
 

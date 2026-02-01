@@ -1,10 +1,10 @@
 """
-Pytest Configuration and Shared Fixtures
+Pytest 配置和共享 Fixtures
 
-This module provides:
-- Common test fixtures
-- Pytest hooks and configuration
-- Shared test utilities
+本模块提供：
+- 通用测试 fixtures
+- Pytest 钩子和配置
+- 共享测试工具
 """
 
 import os
@@ -13,26 +13,26 @@ from pathlib import Path
 
 import pytest
 
-# Ensure src is in path for imports
+# 确保 src 在路径中以便导入
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 
 @pytest.fixture
 def project_root() -> Path:
-    """Return the project root directory."""
+    """返回项目根目录。"""
     return PROJECT_ROOT
 
 
 @pytest.fixture
 def config_path(project_root: Path) -> Path:
-    """Return the path to the test configuration file."""
+    """返回测试配置文件的路径。"""
     return project_root / "config" / "settings.yaml"
 
 
 @pytest.fixture
 def sample_settings_dict() -> dict:
-    """Return a sample settings dictionary for testing."""
+    """返回用于测试的样例配置字典。"""
     return {
         "llm": {
             "provider": "openai",
@@ -74,7 +74,7 @@ def sample_settings_dict() -> dict:
 
 @pytest.fixture
 def temp_config_file(tmp_path: Path, sample_settings_dict: dict) -> Path:
-    """Create a temporary configuration file for testing."""
+    """创建用于测试的临时配置文件。"""
     import yaml
     
     config_file = tmp_path / "settings.yaml"

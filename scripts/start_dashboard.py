@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-Dashboard Server Script
+仪表板服务器脚本
 
-Usage:
+用法：
     python scripts/start_dashboard.py [--port <port>] [--config <config_path>]
 
-This script starts the observability dashboard server.
-Will be fully implemented in Phase F (Observability Dashboard).
+此脚本启动可观测性仪表板服务器。
+将在阶段 F（可观测性仪表板）中完整实现。
 """
 
 import argparse
@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def main():
-    """Main entry point for dashboard script."""
+    """仪表板脚本的主入口点。"""
     parser = argparse.ArgumentParser(description="Start the observability dashboard")
     parser.add_argument("--port", "-p", type=int, default=8080, help="Server port")
     parser.add_argument("--host", default="127.0.0.1", help="Server host")
@@ -32,10 +32,10 @@ def main():
     print(f"[INFO] Full implementation coming in Phase F")
     
     # TODO: Implement in Phase F
-    # 1. Load configuration
-    # 2. Initialize dashboard components
-    # 3. Set up routes for trace visualization
-    # 4. Start web server
+    # 1. 加载配置
+    # 2. 初始化仪表板组件
+    # 3. 设置跟踪可视化路由
+    # 4. 启动 Web 服务器
     
     return 0
 

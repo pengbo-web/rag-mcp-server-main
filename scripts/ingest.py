@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-Data Ingestion Script
+数据摄取脚本
 
-Usage:
+用法：
     python scripts/ingest.py --input <path> [--config <config_path>]
 
-This script processes documents and ingests them into the vector store.
-Will be fully implemented in Phase B (Ingestion Pipeline).
+此脚本处理文档并将其摄取到向量存储中。
+将在阶段 B（数据摄取管道）中完整实现。
 """
 
 import argparse
@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def main():
-    """Main entry point for ingestion script."""
+    """数据摄取脚本的主入口点。"""
     parser = argparse.ArgumentParser(description="Ingest documents into the RAG system")
     parser.add_argument("--input", "-i", required=True, help="Input file or directory path")
     parser.add_argument("--config", "-c", default="config/settings.yaml", help="Configuration file path")
@@ -33,11 +33,11 @@ def main():
     print(f"[INFO] Full implementation coming in Phase B")
     
     # TODO: Implement in Phase B
-    # 1. Load configuration
-    # 2. Initialize loaders based on file types
-    # 3. Process documents through transform pipeline
-    # 4. Generate embeddings
-    # 5. Store in vector database
+    # 1. 加载配置
+    # 2. 根据文件类型初始化加载器
+    # 3. 通过转换管道处理文档
+    # 4. 生成嵌入向量
+    # 5. 存储到向量数据库
     
     return 0
 

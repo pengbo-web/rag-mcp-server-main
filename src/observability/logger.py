@@ -1,7 +1,7 @@
 """
-Structured Logger - Logging utilities for the RAG MCP Server.
+结构化日志器 - RAG MCP Server 的日志工具。
 
-Provides a consistent logging interface with structured output support.
+提供一致的日志接口，支持结构化输出。
 """
 
 import logging
@@ -11,17 +11,17 @@ from typing import Optional
 
 def get_logger(name: Optional[str] = None) -> logging.Logger:
     """
-    Get a logger instance with consistent configuration.
+    获取具有一致配置的日志器实例。
     
-    Args:
-        name: Logger name. If None, returns the root logger.
+    参数:
+        name: 日志器名称。如果为 None，返回根日志器。
         
-    Returns:
-        logging.Logger: Configured logger instance.
+    返回:
+        logging.Logger: 配置好的日志器实例
     """
     logger = logging.getLogger(name)
     
-    # Only configure if no handlers exist (avoid duplicate handlers)
+    # 仅在没有 handler 时配置（避免重复的 handler）
     if not logger.handlers:
         handler = logging.StreamHandler(sys.stderr)
         formatter = logging.Formatter(
