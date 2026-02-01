@@ -1,0 +1,8 @@
+# Logs Directory
+
+This directory stores log files:
+- Application logs
+- Trace outputs (traces.jsonl)
+- Debug information
+
+Log rotation and cleanup is managed automatically.

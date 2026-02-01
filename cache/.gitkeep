@@ -1,0 +1,8 @@
+# Cache Directory
+
+This directory stores cached data:
+- Embedding cache
+- LLM response cache
+- Intermediate processing results
+
+Auto-managed by the system.

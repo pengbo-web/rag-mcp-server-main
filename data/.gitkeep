@@ -1,0 +1,8 @@
+# Data Directory
+
+This directory contains:
+- `raw/` - Raw input documents
+- `db/` - Vector database storage (ChromaDB)
+- `cache/` - Cached embeddings and intermediate data
+
+These directories are auto-created by the ingestion pipeline.

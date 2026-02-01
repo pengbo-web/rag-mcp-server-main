@@ -1,0 +1,80 @@
+# =============================================================================
+# Modular RAG MCP Server - Main Configuration
+# =============================================================================
+# This file contains all configurable settings for the RAG MCP Server.
+# Edit this file to customize LLM, Embedding, VectorStore, and other services.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# LLM Configuration (Large Language Model)
+# -----------------------------------------------------------------------------
+llm:
+  provider: "openai"  # Options: openai, azure, ollama, deepseek
+  model: "gpt-4o-mini"
+  api_key: "${OPENAI_API_KEY}"  # Use environment variable
+  base_url: null  # Optional: custom API endpoint
+  temperature: 0.7
+  max_tokens: 2048
+  timeout: 30
+
+# -----------------------------------------------------------------------------
+# Embedding Configuration
+# -----------------------------------------------------------------------------
+embedding:
+  provider: "openai"  # Options: openai, local, ollama
+  model: "text-embedding-3-small"
+  api_key: "${OPENAI_API_KEY}"
+  dimensions: 1536
+  batch_size: 100
+
+# -----------------------------------------------------------------------------
+# Vector Store Configuration
+# -----------------------------------------------------------------------------
+vector_store:
+  provider: "chroma"  # Options: chroma, qdrant, pinecone
+  persist_directory: "./data/db/chroma"
+  collection_name: "default"
+
+# -----------------------------------------------------------------------------
+# Retrieval Configuration
+# -----------------------------------------------------------------------------
+retrieval:
+  dense_weight: 0.7  # Weight for dense (semantic) retrieval
+  sparse_weight: 0.3  # Weight for sparse (BM25) retrieval
+  top_k: 10  # Number of results to return
+  rrf_k: 60  # RRF constant
+
+# -----------------------------------------------------------------------------
+# Reranker Configuration
+# -----------------------------------------------------------------------------
+rerank:
+  provider: "none"  # Options: none, cross_encoder, llm
+  model: null  # Model name for cross_encoder or llm reranker
+  top_k: 5  # Number of results after reranking
+
+# -----------------------------------------------------------------------------
+# Evaluation Configuration
+# -----------------------------------------------------------------------------
+evaluation:
+  provider: "custom"  # Options: ragas, deepeval, custom
+  metrics:
+    - "hit_rate"
+    - "mrr"
+    - "faithfulness"
+
+# -----------------------------------------------------------------------------
+# Observability Configuration
+# -----------------------------------------------------------------------------
+observability:
+  log_level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  trace_enabled: true
+  trace_output: "./logs/traces.jsonl"
+  structured_logging: true
+
+# -----------------------------------------------------------------------------
+# Ingestion Configuration
+# -----------------------------------------------------------------------------
+ingestion:
+  chunk_size: 1000
+  chunk_overlap: 200
+  batch_size: 50
