@@ -1,10 +1,16 @@
 """
-Vector Store Module - Vector database abstractions.
+VectorStore 库模块。
 
-This package contains:
-- BaseVectorStore: Abstract base class for vector stores
-- VectorStoreFactory: Factory for creating vector store instances
-- Implementations: Chroma, (future: Qdrant, Pinecone)
+提供统一的 VectorStore 抽象接口和工厂，支持多种向量数据库后端。
 """
 
-__all__ = []
+from .base_vector_store import BaseVectorStore, VectorRecord, QueryResult, VectorStoreError
+from .vector_store_factory import VectorStoreFactory
+
+__all__ = [
+    "BaseVectorStore",
+    "VectorRecord",
+    "QueryResult",
+    "VectorStoreError",
+    "VectorStoreFactory",
+]
