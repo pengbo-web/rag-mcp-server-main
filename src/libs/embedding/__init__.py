@@ -1,10 +1,15 @@
 """
-Embedding Module - Text embedding abstractions.
+Embedding 库模块。
 
-This package contains:
-- BaseEmbedding: Abstract base class for embedding services
-- EmbeddingFactory: Factory for creating embedding instances
-- Implementations: OpenAI, Local (BGE/Ollama)
+提供统一的 Embedding 抽象接口和工厂，支持多种提供商。
 """
 
-__all__ = []
+from .base_embedding import BaseEmbedding, EmbeddingResponse, EmbeddingError
+from .embedding_factory import EmbeddingFactory
+
+__all__ = [
+    "BaseEmbedding",
+    "EmbeddingResponse",
+    "EmbeddingError",
+    "EmbeddingFactory",
+]
