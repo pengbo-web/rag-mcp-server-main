@@ -16,6 +16,6 @@ Libs 层 - 可插拔抽象层与工厂模式。
 - Loader: 文档加载工具
 """
 
-from . import llm, embedding, splitter, vector_store, reranker
+from . import llm, embedding, splitter, vector_store, reranker, evaluator
 
-__all__ = ["llm", "embedding", "splitter", "vector_store", "reranker"]
+__all__ = ["llm", "embedding", "splitter", "vector_store", "reranker", "evaluator"]
