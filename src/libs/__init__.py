@@ -1,19 +1,21 @@
 """
-Libs Layer - Pluggable abstraction layer with factory pattern.
+Libs 层 - 可插拔抽象层与工厂模式。
 
-This package provides:
-- Abstract base classes for all pluggable components
-- Factory functions for component instantiation
-- Default implementations for each component type
+此包提供：
+- 所有可插拔组件的抽象基类
+- 组件实例化的工厂函数
+- 每种组件类型的默认实现
 
-Supported component types:
-- LLM: Large Language Model clients
-- Embedding: Text embedding services
-- Splitter: Text chunking strategies
-- VectorStore: Vector database backends
-- Reranker: Result reranking strategies
-- Evaluator: RAG evaluation metrics
-- Loader: Document loading utilities
+支持的组件类型：
+- LLM: 大语言模型客户端
+- Embedding: 文本嵌入服务
+- Splitter: 文本切分策略
+- VectorStore: 向量数据库后端
+- Reranker: 结果重排序策略
+- Evaluator: RAG 评估指标
+- Loader: 文档加载工具
 """
 
-__all__ = []
+from . import llm
+
+__all__ = ["llm"]

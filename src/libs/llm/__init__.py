@@ -1,10 +1,16 @@
 """
-LLM Module - Large Language Model abstractions.
+LLM 库模块。
 
-This package contains:
-- BaseLLM: Abstract base class for LLM clients
-- LLMFactory: Factory for creating LLM instances
-- Implementations: OpenAI, Azure, Ollama, DeepSeek
+提供统一的 LLM 抽象接口和工厂，支持多种提供商。
 """
 
-__all__ = []
+from .base_llm import BaseLLM, Message, ChatResponse, LLMError
+from .llm_factory import LLMFactory
+
+__all__ = [
+    "BaseLLM",
+    "Message",
+    "ChatResponse",
+    "LLMError",
+    "LLMFactory",
+]
