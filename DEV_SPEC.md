@@ -1660,7 +1660,7 @@ observability:
 | B7.4 | Local Embedding 实现 | [x] | 2026-02-03 | 23个测试，确定性假向量（占位实现） |
 | B7.5 | Recursive Splitter 默认实现 | [x] | 2026-02-03 | 25个测试，Markdown代码块保护 |
 | B7.6 | ChromaStore 默认实现 | [x] | 2026-02-03 | 30个集成测试，本地持久化 |
-| B7.7 | LLM Reranker 实现 | [ ] | - | |
+| B7.7 | LLM Reranker 实现 | [x] | 2026-02-03 | 23个测试，prompt模板+重试机制 |
 | B7.8 | Cross-Encoder Reranker 实现 | [ ] | - | |
 
 #### 阶段 C：Ingestion Pipeline MVP
@@ -1929,31 +1929,14 @@ observability:
 - **测试方法**：`pytest -q tests/unit/test_recursive_splitter_lib.py`。
 
 ### B7.6：ChromaStore（VectorStore 默认后端）
-- **状态**：✅ 已完成 (2026-02-03)
-- **目标**：补齐 `chroma_store.py`，支持最小 `upsert(records)` 与 `query(vector, top_k, filters)`，并支持本地持久化目录。
+- **目标**：补齐 `chroma_store.py`，支持最小 `upsert(records)` 与 `query(vector, top_k, filters)`，并支持本地持久化目录（例如 `data/db/chroma/`）。
 - **修改文件**：
-  - `src/libs/vector_store/chroma_store.py` (347 lines)
-  - `tests/integration/test_chroma_store_roundtrip.py` (513 lines, 30 tests)
-  - `src/libs/vector_store/__init__.py` (注册 ChromaStore)
-  - `pyproject.toml` (添加 chromadb>=1.4.0 到 integration 依赖)
-- **实现要点**：
-  - ChromaDB PersistentClient 初始化，支持本地持久化
-  - upsert: 批量插入/更新向量记录
-  - query: 向量相似度搜索 + 元数据过滤，距离转相似度分数
-  - delete/get/count/clear: 完整 CRUD 操作
-  - 工厂集成：`VectorStoreFactory.create_from_vector_store_settings(settings)`
-  - Windows 文件锁定兼容性处理
-- **测试结果**：30/30 集成测试通过（全局 236 个单元测试保持通过）
-  - 初始化测试：3 个
-  - Upsert 测试：4 个
-  - Query 测试：6 个
-  - Delete 测试：4 个
-  - Get 测试：4 个
-  - Count 测试：3 个
-  - Clear 测试：2 个
-  - Roundtrip 测试：1 个
-  - 持久化测试：1 个
-  - 工厂集成测试：2 个
+  - `src/libs/vector_store/chroma_store.py`
+  - `tests/integration/test_chroma_store_roundtrip.py`（可选：标记为 integration，允许跳过）
+- **验收标准**：
+  - provider=chroma 时 `VectorStoreFactory` 可创建。
+  - 在可用环境下完成一次最小 roundtrip：upsert→query 返回 deterministic 结果。
+- **测试方法**：`pytest -q tests/integration/test_chroma_store_roundtrip.py`（可选）。
 
 ### B7.7：LLM Reranker（读取 rerank prompt）
 - **目标**：补齐 `llm_reranker.py`，读取 `config/prompts/rerank.txt` 构造 prompt（测试中可注入替代文本），并可在失败时返回可回退信号。
