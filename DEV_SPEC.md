@@ -1658,7 +1658,7 @@ observability:
 | B7.2 | Ollama LLM 实现 | [x] | 2026-02-03 | 19个测试，支持本地 Ollama 服务 |
 | B7.3 | OpenAI Embedding 实现 | [x] | 2026-02-03 | 24个测试，支持 v3/ada-002 模型 |
 | B7.4 | Local Embedding 实现 | [x] | 2026-02-03 | 23个测试，确定性假向量（占位实现） |
-| B7.5 | Recursive Splitter 默认实现 | [ ] | - | |
+| B7.5 | Recursive Splitter 默认实现 | [x] | 2026-02-03 | 25个测试，Markdown代码块保护 |
 | B7.6 | ChromaStore 默认实现 | [ ] | - | |
 | B7.7 | LLM Reranker 实现 | [ ] | - | |
 | B7.8 | Cross-Encoder Reranker 实现 | [ ] | - | |
@@ -1919,14 +1919,25 @@ observability:
 - **测试方法**：`pytest -q tests/unit/test_local_embedding.py`。
 
 ### B7.5：Recursive Splitter 默认实现
-- **目标**：补齐 `recursive_splitter.py`，封装 LangChain 的切分逻辑，作为默认切分器。
+- **状态**：✅ 已完成 (2026-02-03)
+- **目标**：补齐 `recursive_splitter.py`，封装递归文本切分逻辑，作为默认切分器。
 - **修改文件**：
-  - `src/libs/splitter/recursive_splitter.py`
-  - `tests/unit/test_recursive_splitter_lib.py`
-- **验收标准**：
-  - provider=recursive 时 `SplitterFactory` 可创建。
-  - `split_text` 能正确处理 Markdown 结构（标题/代码块不被打断）。
-- **测试方法**：`pytest -q tests/unit/test_recursive_splitter_lib.py`。
+  - `src/libs/splitter/recursive_splitter.py` (271 lines)
+  - `tests/unit/test_recursive_splitter.py` (268 lines)
+  - `src/libs/splitter/__init__.py` (注册 RecursiveSplitter)
+- **实现要点**：
+  - 12 级分隔符层次策略：`"\n\n"` → `"\n"` → 句号 → 逗号 → 空格 → 字符
+  - Markdown 代码块保护：regex 模式匹配 ` ```...``` `
+  - chunk_overlap 管理维持上下文连续性
+  - 工厂集成：`SplitterFactory.create_with_params("recursive")`
+- **测试结果**：25/25 通过（全局 236 个单元测试）
+  - 初始化测试：4 个
+  - 基础切分测试：6 个
+  - Markdown 处理测试：3 个
+  - 错误处理测试：2 个
+  - Chunk 属性测试：4 个
+  - 边界情况测试：4 个
+  - 工厂集成测试：2 个
 
 ### B7.6：ChromaStore（VectorStore 默认后端）
 - **目标**：补齐 `chroma_store.py`，支持最小 `upsert(records)` 与 `query(vector, top_k, filters)`，并支持本地持久化目录（例如 `data/db/chroma/`）。
