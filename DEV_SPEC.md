@@ -1661,7 +1661,7 @@ observability:
 | B7.5 | Recursive Splitter 默认实现 | [x] | 2026-02-03 | 25个测试，Markdown代码块保护 |
 | B7.6 | ChromaStore 默认实现 | [x] | 2026-02-03 | 30个集成测试，本地持久化 |
 | B7.7 | LLM Reranker 实现 | [x] | 2026-02-03 | 23个测试，prompt模板+重试机制 |
-| B7.8 | Cross-Encoder Reranker 实现 | [ ] | - | |
+| B7.8 | Cross-Encoder Reranker 实现 | [x] | 2026-02-03 | 25个测试，mock scorer+超时回退 |
 
 #### 阶段 C：Ingestion Pipeline MVP
 
