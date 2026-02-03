@@ -6,6 +6,10 @@ VectorStore 库模块。
 
 from .base_vector_store import BaseVectorStore, VectorRecord, QueryResult, VectorStoreError
 from .vector_store_factory import VectorStoreFactory
+from .chroma_store import ChromaStore
+
+# 注册 ChromaStore 提供商
+VectorStoreFactory.register("chroma", ChromaStore)
 
 __all__ = [
     "BaseVectorStore",
@@ -13,4 +17,5 @@ __all__ = [
     "QueryResult",
     "VectorStoreError",
     "VectorStoreFactory",
+    "ChromaStore",
 ]
