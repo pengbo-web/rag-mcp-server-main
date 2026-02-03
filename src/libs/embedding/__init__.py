@@ -7,9 +7,11 @@ Embedding 库模块。
 from .base_embedding import BaseEmbedding, EmbeddingResponse, EmbeddingError
 from .embedding_factory import EmbeddingFactory
 from .openai_embedding import OpenAIEmbedding
+from .local_embedding import LocalEmbedding
 
 # 注册提供商到工厂
 EmbeddingFactory.register("openai", OpenAIEmbedding)
+EmbeddingFactory.register("local", LocalEmbedding)
 
 __all__ = [
     "BaseEmbedding",
@@ -17,4 +19,5 @@ __all__ = [
     "EmbeddingError",
     "EmbeddingFactory",
     "OpenAIEmbedding",
+    "LocalEmbedding",
 ]
